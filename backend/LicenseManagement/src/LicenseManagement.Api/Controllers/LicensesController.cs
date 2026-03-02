@@ -80,6 +80,15 @@ public class LicensesController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>[Admin] Create/gift a license to a user</summary>
+    [HttpPost("admin-create")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> AdminCreate([FromBody] AdminCreateLicenseCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return result.Success ? Created("", result) : BadRequest(result);
+    }
+
     /// <summary>[Admin] Get all licenses with filtering</summary>
     [HttpGet]
     [Authorize(Roles = "Admin")]

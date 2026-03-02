@@ -24,4 +24,7 @@ export const licensesApi = {
 
   reinstate: (id: string) =>
     apiClient.put<ApiResponse>(`/licenses/${id}/reinstate`),
+
+  adminCreate: (data: { userId: string; licensePlanId: string; note?: string }) =>
+    apiClient.post<ApiResponse<License>>("/licenses/admin-create", data),
 };

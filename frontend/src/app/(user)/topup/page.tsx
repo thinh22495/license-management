@@ -91,7 +91,7 @@ export default function TopUpPage() {
             <div style={{ marginBottom: 24 }}>
               <Text strong style={{ display: "block", marginBottom: 12 }}>Phương thức thanh toán:</Text>
               <Radio.Group value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
-                <Space direction="vertical">
+                <Space orientation="vertical">
                   <Radio value="momo">MoMo</Radio>
                   <Radio value="vnpay">VNPay</Radio>
                   <Radio value="zalopay">ZaloPay</Radio>

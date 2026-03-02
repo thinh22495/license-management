@@ -46,7 +46,7 @@ export default function LoginPage() {
       }}
     >
       <Card style={{ width: 420, borderRadius: 12 }}>
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <Space orientation="vertical" size="large" style={{ width: "100%" }}>
           <div style={{ textAlign: "center" }}>
             <Title level={2} style={{ marginBottom: 4 }}>
               Đăng nhập

@@ -29,15 +29,16 @@ const menuItems = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, hasHydrated, logout } = useAuthStore();
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== "Admin") {
+    if (hasHydrated && (!isAuthenticated || user?.role !== "Admin")) {
       router.push("/login");
     }
-  }, [isAuthenticated, user, router]);
+  }, [hasHydrated, isAuthenticated, user, router]);
 
+  if (!hasHydrated) return null;
   if (!user || user.role !== "Admin") return null;
 
   const handleLogout = () => {

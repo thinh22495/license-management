@@ -13,4 +13,13 @@ export const usersApi = {
 
   lock: (id: string, isLocked: boolean) =>
     apiClient.put<ApiResponse>(`/users/${id}/lock`, { isLocked }),
+
+  create: (data: { email: string; password: string; fullName: string; phone?: string; role?: string }) =>
+    apiClient.post<ApiResponse<UserDto>>("/users", data),
+
+  adminUpdate: (id: string, data: { email?: string; fullName?: string; phone?: string; role?: string; emailVerified?: boolean }) =>
+    apiClient.put<ApiResponse<UserDto>>(`/users/${id}/admin-update`, data),
+
+  topUp: (id: string, data: { amount: number; note?: string }) =>
+    apiClient.post<ApiResponse<UserDto>>(`/users/${id}/topup`, data),
 };

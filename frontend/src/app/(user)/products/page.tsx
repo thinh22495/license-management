@@ -38,7 +38,8 @@ export default function ProductsPage() {
   const { data: productsRes, isLoading } = useQuery({
     queryKey: ["products"],
     queryFn: () => productsApi.getAll({ activeOnly: true }),
-    select: (res) => res.data.data,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    select: (res) => (res.data as any)?.items,
   });
 
   const products = productsRes ?? [];
@@ -52,7 +53,7 @@ export default function ProductsPage() {
         <div style={{ textAlign: "center", padding: 48 }}><Spin size="large" /></div>
       ) : (
         <Row gutter={[16, 16]}>
-          {products.map((product) => (
+          {products.map((product: Product) => (
             <Col xs={24} sm={12} lg={8} key={product.id}>
               <Card
                 hoverable
@@ -91,7 +92,8 @@ function PlansModal({ product, open, onClose, userBalance }: { product: Product;
   const { data: plansRes, isLoading } = useQuery({
     queryKey: ["plans", product.id],
     queryFn: () => plansApi.getByProduct(product.id, { activeOnly: true }),
-    select: (res) => res.data.data,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    select: (res) => res.data as any as LicensePlan[],
     enabled: open,
   });
 

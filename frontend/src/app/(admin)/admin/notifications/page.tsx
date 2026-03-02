@@ -32,7 +32,8 @@ export default function AdminNotificationsPage() {
   const { data: usersRes } = useQuery({
     queryKey: ["admin-users-select"],
     queryFn: () => usersApi.getAll({ pageSize: 100 }),
-    select: (res) => res.data.data?.items ?? [],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    select: (res) => (res.data as any)?.items ?? [],
   });
 
   const sendNotification = useMutation({

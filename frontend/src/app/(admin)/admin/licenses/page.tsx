@@ -13,17 +13,24 @@ import {
   message,
   Popconfirm,
   Tooltip,
+  Modal,
+  Form,
 } from "antd";
 import {
   StopOutlined,
   PauseCircleOutlined,
   PlayCircleOutlined,
   CopyOutlined,
+  PlusOutlined,
+  GiftOutlined,
 } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { licensesApi } from "@/lib/api/licenses.api";
-import { formatDate } from "@/lib/utils/format";
-import type { License } from "@/types";
+import { productsApi } from "@/lib/api/products.api";
+import { plansApi } from "@/lib/api/plans.api";
+import { usersApi } from "@/lib/api/users.api";
+import { formatDate, formatVND } from "@/lib/utils/format";
+import type { License, LicensePlan, UserDto, Product } from "@/types";
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -41,10 +48,32 @@ export default function AdminLicensesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | undefined>();
 
+  // Create license modal
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createForm] = Form.useForm();
+  const [selectedProductId, setSelectedProductId] = useState<string | undefined>();
+  const [plans, setPlans] = useState<LicensePlan[]>([]);
+  const [userSearch, setUserSearch] = useState("");
+
   const { data, isLoading } = useQuery({
     queryKey: ["admin-licenses", page, search, statusFilter],
     queryFn: () => licensesApi.getAll({ page, pageSize: 20, search: search || undefined, status: statusFilter }),
     select: (res) => res.data,
+  });
+
+  const { data: productsRes } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => productsApi.getAll({ activeOnly: true }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    select: (res) => (res.data as any)?.items ?? [],
+  });
+
+  const { data: usersRes } = useQuery({
+    queryKey: ["admin-users-select", userSearch],
+    queryFn: () => usersApi.getAll({ page: 1, pageSize: 50, search: userSearch || undefined }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    select: (res) => (res.data as any)?.items ?? [],
+    enabled: createOpen,
   });
 
   const revoke = useMutation({
@@ -61,6 +90,32 @@ export default function AdminLicensesPage() {
     mutationFn: (id: string) => licensesApi.reinstate(id),
     onSuccess: () => { message.success("Đã khôi phục"); queryClient.invalidateQueries({ queryKey: ["admin-licenses"] }); },
   });
+
+  const createLicense = useMutation({
+    mutationFn: (values: { userId: string; licensePlanId: string; note?: string }) =>
+      licensesApi.adminCreate(values),
+    onSuccess: () => {
+      message.success("Tạo license thành công");
+      queryClient.invalidateQueries({ queryKey: ["admin-licenses"] });
+      setCreateOpen(false);
+      createForm.resetFields();
+      setSelectedProductId(undefined);
+      setPlans([]);
+    },
+    onError: () => message.error("Lỗi khi tạo license"),
+  });
+
+  const handleProductChange = async (productId: string) => {
+    setSelectedProductId(productId);
+    createForm.setFieldValue("licensePlanId", undefined);
+    try {
+      const res = await plansApi.getByProduct(productId, { activeOnly: true });
+      const plansData = res.data;
+      setPlans(Array.isArray(plansData) ? plansData : (plansData as any)?.data ?? []);
+    } catch {
+      setPlans([]);
+    }
+  };
 
   const columns = [
     {
@@ -123,7 +178,12 @@ export default function AdminLicensesPage() {
 
   return (
     <div>
-      <Title level={3}>Quản lý Licenses</Title>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <Title level={3} style={{ margin: 0 }}>Quản lý Licenses</Title>
+        <Button type="primary" icon={<GiftOutlined />} onClick={() => setCreateOpen(true)}>
+          Tạo / Tặng Key
+        </Button>
+      </div>
 
       <Card>
         <Space style={{ marginBottom: 16 }}>
@@ -161,6 +221,74 @@ export default function AdminLicensesPage() {
           }}
         />
       </Card>
+
+      {/* Create / Gift License Modal */}
+      <Modal
+        title="Tạo / Tặng License Key"
+        open={createOpen}
+        onOk={() => createForm.submit()}
+        onCancel={() => {
+          setCreateOpen(false);
+          createForm.resetFields();
+          setSelectedProductId(undefined);
+          setPlans([]);
+        }}
+        confirmLoading={createLicense.isPending}
+        width={520}
+      >
+        <Form form={createForm} layout="vertical" onFinish={(v) => createLicense.mutate(v)}>
+          <Form.Item
+            name="userId"
+            label="Người dùng"
+            rules={[{ required: true, message: "Vui lòng chọn người dùng" }]}
+          >
+            <Select
+              showSearch
+              placeholder="Tìm theo email hoặc tên..."
+              filterOption={false}
+              onSearch={setUserSearch}
+              options={(usersRes ?? []).map((u: UserDto) => ({
+                value: u.id,
+                label: `${u.email} - ${u.fullName}`,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="productId"
+            label="Sản phẩm"
+            rules={[{ required: true, message: "Vui lòng chọn sản phẩm" }]}
+          >
+            <Select
+              placeholder="Chọn sản phẩm"
+              onChange={handleProductChange}
+              options={(productsRes ?? []).map((p: Product) => ({
+                value: p.id,
+                label: p.name,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="licensePlanId"
+            label="Gói license"
+            rules={[{ required: true, message: "Vui lòng chọn gói" }]}
+          >
+            <Select
+              placeholder={selectedProductId ? "Chọn gói" : "Chọn sản phẩm trước"}
+              disabled={!selectedProductId}
+              options={plans.map((p) => ({
+                value: p.id,
+                label: `${p.name} - ${p.durationDays === 0 ? "Vĩnh viễn" : `${p.durationDays} ngày`} - ${formatVND(p.price)}`,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item name="note" label="Ghi chú">
+            <Input.TextArea rows={2} placeholder="Lý do tạo/tặng key (không bắt buộc)" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

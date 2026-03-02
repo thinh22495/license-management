@@ -39,7 +39,8 @@ export default function AdminProductsPage() {
   const { data: productsRes, isLoading } = useQuery({
     queryKey: ["admin-products"],
     queryFn: () => productsApi.getAll(),
-    select: (res) => res.data.data,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    select: (res) => (res.data as any)?.items,
   });
 
   const products = productsRes ?? [];
@@ -239,7 +240,8 @@ function PlansTable({ productId }: { productId: string }) {
   const { data: plansRes, isLoading } = useQuery({
     queryKey: ["plans", productId],
     queryFn: () => plansApi.getByProduct(productId),
-    select: (res) => res.data.data,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    select: (res) => res.data as any as LicensePlan[],
   });
 
   const deletePlan = useMutation({

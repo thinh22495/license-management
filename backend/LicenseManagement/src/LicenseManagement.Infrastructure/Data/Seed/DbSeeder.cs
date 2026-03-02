@@ -32,7 +32,7 @@ public static class DbSeeder
         // Admin user
         var admin = new User
         {
-            Email = "admin@licensemanagement.com",
+            Email = "thinh95.tranhuu@gmail.com",
             Phone = "0900000000",
             FullName = "System Admin",
             PasswordHash = passwordHasher.HashPassword("Admin@123"),

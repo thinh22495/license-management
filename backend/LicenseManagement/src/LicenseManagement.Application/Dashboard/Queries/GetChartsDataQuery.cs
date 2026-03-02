@@ -36,11 +36,7 @@ public class GetChartsDataQueryHandler : IRequestHandler<GetChartsDataQuery, Api
                 && t.Type == TransactionType.Purchase
                 && t.CreatedAt >= startDate)
             .GroupBy(t => t.CreatedAt.Date)
-            .Select(g => new RevenueChartItem
-            {
-                Date = g.Key.ToString("yyyy-MM-dd"),
-                Amount = g.Sum(t => t.Amount),
-            })
+            .Select(g => new { Date = g.Key, Amount = g.Sum(t => t.Amount) })
             .OrderBy(r => r.Date)
             .ToListAsync(ct);
 
@@ -48,11 +44,7 @@ public class GetChartsDataQueryHandler : IRequestHandler<GetChartsDataQuery, Api
         var licensesData = await _context.UserLicenses
             .Where(l => l.CreatedAt >= startDate)
             .GroupBy(l => l.CreatedAt.Date)
-            .Select(g => new LicenseChartItem
-            {
-                Date = g.Key.ToString("yyyy-MM-dd"),
-                Count = g.Count(),
-            })
+            .Select(g => new { Date = g.Key, Count = g.Count() })
             .OrderBy(l => l.Date)
             .ToListAsync(ct);
 
@@ -60,11 +52,7 @@ public class GetChartsDataQueryHandler : IRequestHandler<GetChartsDataQuery, Api
         var usersData = await _context.Users
             .Where(u => u.CreatedAt >= startDate)
             .GroupBy(u => u.CreatedAt.Date)
-            .Select(g => new UserGrowthItem
-            {
-                Date = g.Key.ToString("yyyy-MM-dd"),
-                Count = g.Count(),
-            })
+            .Select(g => new { Date = g.Key, Count = g.Count() })
             .OrderBy(u => u.Date)
             .ToListAsync(ct);
 
@@ -85,21 +73,30 @@ public class GetChartsDataQueryHandler : IRequestHandler<GetChartsDataQuery, Api
 
         // Fill missing dates with zeros
         var allDates = Enumerable.Range(0, request.Days + 1)
-            .Select(i => startDate.AddDays(i).ToString("yyyy-MM-dd"))
+            .Select(i => startDate.AddDays(i))
             .ToList();
 
-        var revenueMap = revenueData.ToDictionary(r => r.Date);
-        var licensesMap = licensesData.ToDictionary(l => l.Date);
-        var usersMap = usersData.ToDictionary(u => u.Date);
+        var revenueMap = revenueData.ToDictionary(r => r.Date, r => r.Amount);
+        var licensesMap = licensesData.ToDictionary(l => l.Date, l => l.Count);
+        var usersMap = usersData.ToDictionary(u => u.Date, u => u.Count);
 
         var result = new ChartsDataDto
         {
-            Revenue = allDates.Select(d => revenueMap.TryGetValue(d, out var v)
-                ? v : new RevenueChartItem { Date = d, Amount = 0 }).ToList(),
-            Licenses = allDates.Select(d => licensesMap.TryGetValue(d, out var v)
-                ? v : new LicenseChartItem { Date = d, Count = 0 }).ToList(),
-            Users = allDates.Select(d => usersMap.TryGetValue(d, out var v)
-                ? v : new UserGrowthItem { Date = d, Count = 0 }).ToList(),
+            Revenue = allDates.Select(d => new RevenueChartItem
+            {
+                Date = d.ToString("yyyy-MM-dd"),
+                Amount = revenueMap.GetValueOrDefault(d, 0),
+            }).ToList(),
+            Licenses = allDates.Select(d => new LicenseChartItem
+            {
+                Date = d.ToString("yyyy-MM-dd"),
+                Count = licensesMap.GetValueOrDefault(d, 0),
+            }).ToList(),
+            Users = allDates.Select(d => new UserGrowthItem
+            {
+                Date = d.ToString("yyyy-MM-dd"),
+                Count = usersMap.GetValueOrDefault(d, 0),
+            }).ToList(),
             ProductRevenue = productRevenue,
         };
 
