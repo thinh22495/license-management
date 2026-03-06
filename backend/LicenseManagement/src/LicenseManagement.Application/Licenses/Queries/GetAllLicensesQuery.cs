@@ -36,7 +36,7 @@ public class GetAllLicensesQueryHandler : IRequestHandler<GetAllLicensesQuery, P
             query = query.Where(ul => ul.LicenseProduct.ProductId == request.ProductId.Value);
 
         if (!string.IsNullOrEmpty(request.Search))
-            query = query.Where(ul => ul.LicenseKey.Contains(request.Search) || ul.User.Email.Contains(request.Search));
+            query = query.Where(ul => ul.LicenseKey.Contains(request.Search) || (ul.User != null && ul.User.Email.Contains(request.Search)));
 
         var totalCount = await query.CountAsync(ct);
 
@@ -48,7 +48,7 @@ public class GetAllLicensesQueryHandler : IRequestHandler<GetAllLicensesQuery, P
             {
                 Id = ul.Id,
                 UserId = ul.UserId,
-                UserEmail = ul.User.Email,
+                UserEmail = ul.User != null ? ul.User.Email : "",
                 ProductName = ul.LicenseProduct.Product.Name,
                 PlanName = ul.LicenseProduct.Name,
                 LicenseKey = ul.LicenseKey,

@@ -40,6 +40,7 @@ const statusColors: Record<string, string> = {
   Expired: "orange",
   Revoked: "red",
   Suspended: "volcano",
+  Pending: "gold",
 };
 
 export default function AdminLicensesPage() {
@@ -92,7 +93,7 @@ export default function AdminLicensesPage() {
   });
 
   const createLicense = useMutation({
-    mutationFn: (values: { userId: string; licensePlanId: string; note?: string }) =>
+    mutationFn: (values: { userId?: string; licensePlanId: string; note?: string }) =>
       licensesApi.adminCreate(values),
     onSuccess: () => {
       message.success("Tạo license thành công");
@@ -131,7 +132,12 @@ export default function AdminLicensesPage() {
         </Space>
       ),
     },
-    { title: "Email", dataIndex: "userEmail", key: "userEmail" },
+    {
+      title: "Email",
+      dataIndex: "userEmail",
+      key: "userEmail",
+      render: (v: string) => v || <Tag color="gold">Chưa gán</Tag>,
+    },
     { title: "Sản phẩm", dataIndex: "productName", key: "productName" },
     { title: "Gói", dataIndex: "planName", key: "planName" },
     {
@@ -203,6 +209,7 @@ export default function AdminLicensesPage() {
               { value: "Expired", label: "Expired" },
               { value: "Revoked", label: "Revoked" },
               { value: "Suspended", label: "Suspended" },
+              { value: "Pending", label: "Pending" },
             ]}
           />
         </Space>
@@ -240,11 +247,12 @@ export default function AdminLicensesPage() {
           <Form.Item
             name="userId"
             label="Người dùng"
-            rules={[{ required: true, message: "Vui lòng chọn người dùng" }]}
+            extra="Bỏ trống để tạo key chưa gán (Pending) - user sẽ nhập key sau"
           >
             <Select
               showSearch
-              placeholder="Tìm theo email hoặc tên..."
+              allowClear
+              placeholder="Tìm theo email hoặc tên... (để trống = key chưa gán)"
               filterOption={false}
               onSearch={setUserSearch}
               options={(usersRes ?? []).map((u: UserDto) => ({

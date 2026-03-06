@@ -39,10 +39,13 @@ public class ActivateLicenseCommandHandler : IRequestHandler<ActivateLicenseComm
         if (license == null)
             return ApiResponse<ActivationResultDto>.Fail("License key không hợp lệ");
 
+        if (license.Status == LicenseStatus.Pending)
+            return ApiResponse<ActivationResultDto>.Fail("License chưa được nhập (redeem). Vui lòng nhập key trên web trước");
+
         if (license.Status != LicenseStatus.Active)
             return ApiResponse<ActivationResultDto>.Fail($"License đang ở trạng thái: {license.Status}");
 
-        if (license.User.IsLocked)
+        if (license.User is { IsLocked: true })
             return ApiResponse<ActivationResultDto>.Fail("Tài khoản người dùng đã bị khóa");
 
         if (license.ExpiresAt.HasValue && license.ExpiresAt.Value < DateTime.UtcNow)

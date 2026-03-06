@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using AspNetCoreRateLimit;
 using Hangfire;
@@ -8,6 +9,7 @@ using LicenseManagement.Infrastructure.Jobs;
 using LicenseManagement.Api.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -76,7 +78,59 @@ builder.Services.AddHangfireServer();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "License Management API",
+        Description = "Hệ thống quản lý license - API documentation.\n\n" +
+                      "## Xác thực\n" +
+                      "Sử dụng JWT Bearer token. Đăng nhập qua `/api/v1/auth/login` để lấy token, " +
+                      "sau đó nhấn nút **Authorize** và nhập `Bearer {token}`.\n\n" +
+                      "## Phân quyền\n" +
+                      "- **Public**: Activate, Deactivate, Heartbeat, Validate\n" +
+                      "- **User**: Purchase, Renew, Redeem, My Licenses, Notifications, Payments\n" +
+                      "- **Admin**: Quản lý Users, Products, License Plans, Dashboard",
+        Contact = new OpenApiContact
+        {
+            Name = "License Management Team",
+        },
+    });
+
+    // JWT Bearer auth
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Nhập JWT token: **Bearer {your_token}**",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+
+    // XML comments
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+
+    // Enable annotations
+    options.EnableAnnotations();
+});
 
 var app = builder.Build();
 

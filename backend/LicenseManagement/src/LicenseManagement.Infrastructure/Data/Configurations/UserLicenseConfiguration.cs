@@ -24,7 +24,8 @@ public class UserLicenseConfiguration : IEntityTypeConfiguration<UserLicense>
 
         builder.HasOne(ul => ul.User)
             .WithMany(u => u.Licenses)
-            .HasForeignKey(ul => ul.UserId);
+            .HasForeignKey(ul => ul.UserId)
+            .IsRequired(false);
 
         builder.HasOne(ul => ul.LicenseProduct)
             .WithMany(lp => lp.UserLicenses)

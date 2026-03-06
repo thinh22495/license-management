@@ -6,11 +6,13 @@ using LicenseManagement.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace LicenseManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
+[SwaggerTag("Quản lý thanh toán — nạp tiền qua cổng thanh toán và tra cứu lịch sử giao dịch")]
 public class PaymentsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -24,9 +26,14 @@ public class PaymentsController : ControllerBase
 
     private Guid GetUserId() => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-    /// <summary>Create a top-up order (redirects to payment gateway)</summary>
     [HttpPost("topup")]
     [Authorize]
+    [SwaggerOperation(
+        Summary = "Tạo đơn nạp tiền",
+        Description = "Tạo đơn nạp tiền và chuyển hướng người dùng đến cổng thanh toán (MoMo, VnPay, ZaloPay). Số tiền phải lớn hơn 0 và phương thức thanh toán không được là Balance.")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> TopUp([FromBody] TopUpRequestDto request)
     {
         if (!Enum.TryParse<PaymentMethod>(request.PaymentMethod, true, out var method) || method == PaymentMethod.Balance)
@@ -48,8 +55,11 @@ public class PaymentsController : ControllerBase
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
-    /// <summary>MoMo IPN callback</summary>
     [HttpPost("callback/momo")]
+    [SwaggerOperation(
+        Summary = "Callback IPN từ MoMo",
+        Description = "Endpoint nhận thông báo thanh toán (IPN) từ MoMo. Hệ thống xác minh chữ ký và cập nhật trạng thái giao dịch. Không gọi trực tiếp — chỉ dành cho MoMo server gọi.")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public async Task<IActionResult> MoMoCallback()
     {
         using var reader = new StreamReader(Request.Body);
@@ -70,8 +80,11 @@ public class PaymentsController : ControllerBase
         return Ok(new { resultCode = result.Success ? 0 : 1, message = result.Message ?? "" });
     }
 
-    /// <summary>VnPay return URL callback</summary>
     [HttpGet("callback/vnpay")]
+    [SwaggerOperation(
+        Summary = "Callback return URL từ VnPay",
+        Description = "Endpoint nhận kết quả thanh toán từ VnPay qua query string. Hệ thống xác minh chữ ký SecureHash và chuyển hướng người dùng về trang kết quả trên frontend. Không gọi trực tiếp — chỉ dành cho VnPay redirect.")]
+    [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> VnPayCallback()
     {
         var queryString = Request.QueryString.Value ?? "";
@@ -89,8 +102,11 @@ public class PaymentsController : ControllerBase
         return Redirect($"{frontendUrl}/topup/result?status={status}&message={Uri.EscapeDataString(result.Message ?? "")}");
     }
 
-    /// <summary>ZaloPay callback</summary>
     [HttpPost("callback/zalopay")]
+    [SwaggerOperation(
+        Summary = "Callback từ ZaloPay",
+        Description = "Endpoint nhận thông báo thanh toán từ ZaloPay. Hệ thống xác minh MAC và cập nhật trạng thái giao dịch. Không gọi trực tiếp — chỉ dành cho ZaloPay server gọi.")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public async Task<IActionResult> ZaloPayCallback()
     {
         using var reader = new StreamReader(Request.Body);
@@ -110,9 +126,13 @@ public class PaymentsController : ControllerBase
         return Ok(new { return_code = result.Success ? 1 : 2, return_message = result.Message ?? "" });
     }
 
-    /// <summary>Get current user's transaction history</summary>
     [HttpGet("transactions")]
     [Authorize]
+    [SwaggerOperation(
+        Summary = "Lấy lịch sử giao dịch",
+        Description = "Trả về danh sách giao dịch của người dùng hiện tại, hỗ trợ phân trang. Bao gồm các giao dịch nạp tiền, mua license và hoàn tiền.")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetMyTransactions([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         var result = await _mediator.Send(new GetMyTransactionsQuery

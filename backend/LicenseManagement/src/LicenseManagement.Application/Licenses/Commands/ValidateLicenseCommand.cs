@@ -51,7 +51,7 @@ public class ValidateLicenseCommandHandler : IRequestHandler<ValidateLicenseComm
             return ApiResponse<ValidateResult>.Ok(new ValidateResult { Valid = false, Status = license.Status.ToString().ToLowerInvariant() });
 
         // Check user locked
-        if (license.User.IsLocked)
+        if (license.User is { IsLocked: true })
             return ApiResponse<ValidateResult>.Ok(new ValidateResult { Valid = false, Status = "user_locked" });
 
         // Check hardware binding

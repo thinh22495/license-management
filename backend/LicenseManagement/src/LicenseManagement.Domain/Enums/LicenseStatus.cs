@@ -5,5 +5,6 @@ public enum LicenseStatus
     Active = 0,
     Expired = 1,
     Revoked = 2,
-    Suspended = 3
+    Suspended = 3,
+    Pending = 4
 }

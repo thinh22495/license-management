@@ -29,7 +29,7 @@ public class GetMyLicensesQueryHandler : IRequestHandler<GetMyLicensesQuery, Api
             {
                 Id = ul.Id,
                 UserId = ul.UserId,
-                UserEmail = ul.User.Email,
+                UserEmail = ul.User != null ? ul.User.Email : "",
                 ProductName = ul.LicenseProduct.Product.Name,
                 PlanName = ul.LicenseProduct.Name,
                 LicenseKey = ul.LicenseKey,

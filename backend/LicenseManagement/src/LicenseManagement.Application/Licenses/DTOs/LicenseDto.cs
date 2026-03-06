@@ -3,7 +3,7 @@ namespace LicenseManagement.Application.Licenses.DTOs;
 public class LicenseDto
 {
     public Guid Id { get; set; }
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
     public string UserEmail { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
     public string PlanName { get; set; } = string.Empty;
@@ -14,6 +14,17 @@ public class LicenseDto
     public int CurrentActivations { get; set; }
     public int MaxActivations { get; set; }
     public DateTime CreatedAt { get; set; }
+}
+
+public class LicenseActivationDto
+{
+    public Guid Id { get; set; }
+    public string HardwareId { get; set; } = string.Empty;
+    public string? MachineName { get; set; }
+    public string? IpAddress { get; set; }
+    public DateTime ActivatedAt { get; set; }
+    public DateTime LastSeenAt { get; set; }
+    public bool IsActive { get; set; }
 }
 
 public class ActivationResultDto

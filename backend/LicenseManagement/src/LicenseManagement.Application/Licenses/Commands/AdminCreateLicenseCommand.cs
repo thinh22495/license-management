@@ -10,7 +10,7 @@ namespace LicenseManagement.Application.Licenses.Commands;
 
 public class AdminCreateLicenseCommand : IRequest<ApiResponse<LicenseDto>>
 {
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
     public Guid LicensePlanId { get; set; }
     public string? Note { get; set; }
 }
@@ -30,13 +30,19 @@ public class AdminCreateLicenseCommandHandler : IRequestHandler<AdminCreateLicen
         if (plan == null)
             return ApiResponse<LicenseDto>.Fail("Gói license không tồn tại hoặc đã ngừng bán");
 
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId, ct);
-        if (user == null)
-            return ApiResponse<LicenseDto>.Fail("Người dùng không tồn tại");
+        User? user = null;
+        if (request.UserId.HasValue)
+        {
+            user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId.Value, ct);
+            if (user == null)
+                return ApiResponse<LicenseDto>.Fail("Người dùng không tồn tại");
+        }
 
         var licenseKey = $"LM-{Guid.NewGuid():N}".ToUpperInvariant()[..24];
 
-        var expiresAt = plan.DurationDays > 0
+        // Only set expiry now if assigned to a user; pending keys get expiry on redeem
+        var isAssigned = request.UserId.HasValue;
+        var expiresAt = isAssigned && plan.DurationDays > 0
             ? DateTime.UtcNow.AddDays(plan.DurationDays)
             : (DateTime?)null;
 
@@ -45,7 +51,7 @@ public class AdminCreateLicenseCommandHandler : IRequestHandler<AdminCreateLicen
             UserId = request.UserId,
             LicenseProductId = plan.Id,
             LicenseKey = licenseKey,
-            Status = LicenseStatus.Active,
+            Status = isAssigned ? LicenseStatus.Active : LicenseStatus.Pending,
             ExpiresAt = expiresAt,
             Metadata = string.IsNullOrEmpty(request.Note)
                 ? "{}"
@@ -59,7 +65,7 @@ public class AdminCreateLicenseCommandHandler : IRequestHandler<AdminCreateLicen
         {
             Id = license.Id,
             UserId = license.UserId,
-            UserEmail = user.Email,
+            UserEmail = user?.Email ?? "",
             ProductName = plan.Product.Name,
             PlanName = plan.Name,
             LicenseKey = license.LicenseKey,

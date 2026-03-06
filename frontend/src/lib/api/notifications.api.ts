@@ -20,6 +20,9 @@ export const notificationsApi = {
   markRead: (notificationId?: string) =>
     apiClient.put<ApiResponse>("/notifications/read", { notificationId }),
 
+  delete: (notificationId: string) =>
+    apiClient.delete<ApiResponse>(`/notifications/${notificationId}`),
+
   send: (data: { userId?: string; title: string; body: string; type?: string; channels?: string[] }) =>
     apiClient.post<ApiResponse>("/notifications/send", data),
 };

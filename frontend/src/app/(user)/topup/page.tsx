@@ -73,17 +73,19 @@ export default function TopUpPage() {
 
             <div style={{ marginBottom: 24 }}>
               <Text>Hoặc nhập số tiền khác:</Text>
-              <InputNumber
-                style={{ width: "100%", marginTop: 8 }}
-                min={10_000}
-                max={50_000_000}
-                step={10_000}
-                value={amount}
-                onChange={(v) => v && setAmount(v)}
-                formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                addonAfter="VND"
-                size="large"
-              />
+              <Space.Compact style={{ width: "100%", marginTop: 8 }}>
+                <InputNumber
+                  style={{ width: "100%" }}
+                  min={10_000}
+                  max={50_000_000}
+                  step={10_000}
+                  value={amount}
+                  onChange={(v) => v && setAmount(v)}
+                  formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                  size="large"
+                />
+                <Button size="large" disabled>VND</Button>
+              </Space.Compact>
             </div>
 
             <Divider />
@@ -132,7 +134,7 @@ export default function TopUpPage() {
             type="info"
             showIcon
             style={{ marginTop: 16 }}
-            message="Lưu ý"
+            title="Lưu ý"
             description="Tiền nạp sẽ được cộng vào tài khoản ngay sau khi thanh toán thành công. Mọi giao dịch đều được ghi nhận trong lịch sử."
           />
         </Col>

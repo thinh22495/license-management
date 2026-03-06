@@ -1,5 +1,5 @@
 import apiClient from "./client";
-import type { ApiResponse, License, PagedResult } from "@/types";
+import type { ApiResponse, License, LicenseActivation, PagedResult } from "@/types";
 
 export const licensesApi = {
   // User endpoints
@@ -11,6 +11,15 @@ export const licensesApi = {
 
   renew: (licenseId: string) =>
     apiClient.post<ApiResponse<License>>("/licenses/renew", { licenseId }),
+
+  redeem: (licenseKey: string) =>
+    apiClient.post<ApiResponse<License>>("/licenses/redeem", { licenseKey }),
+
+  getActivations: (licenseId: string) =>
+    apiClient.get<ApiResponse<LicenseActivation[]>>(`/licenses/${licenseId}/activations`),
+
+  remoteDeactivate: (licenseId: string, activationId: string) =>
+    apiClient.delete<ApiResponse>(`/licenses/${licenseId}/activations/${activationId}`),
 
   // Admin endpoints
   getAll: (params?: { page?: number; pageSize?: number; status?: string; productId?: string; search?: string }) =>
@@ -25,6 +34,6 @@ export const licensesApi = {
   reinstate: (id: string) =>
     apiClient.put<ApiResponse>(`/licenses/${id}/reinstate`),
 
-  adminCreate: (data: { userId: string; licensePlanId: string; note?: string }) =>
+  adminCreate: (data: { userId?: string; licensePlanId: string; note?: string }) =>
     apiClient.post<ApiResponse<License>>("/licenses/admin-create", data),
 };

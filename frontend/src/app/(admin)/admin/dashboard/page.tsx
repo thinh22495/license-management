@@ -145,7 +145,7 @@ export default function AdminDashboardPage() {
                     height={300}
                     radius={0.8}
                     innerRadius={0.6}
-                    label={{ type: "inner", content: "{percentage}" }}
+                    label={{ type: "inner", content: (item: any) => `${(item.percentage * 100).toFixed(1)}%` }}
                     tooltip={{ formatter: (datum: any) => ({ name: datum.productName, value: formatVND(datum.revenue) }) }}
                   />
                 ) : (

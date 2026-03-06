@@ -40,6 +40,7 @@ public class LicenseExpiryJob
             .Include(ul => ul.LicenseProduct)
                 .ThenInclude(lp => lp.Product)
             .Where(ul => ul.Status == LicenseStatus.Active
+                && ul.UserId != null
                 && ul.ExpiresAt.HasValue
                 && ul.ExpiresAt.Value > sevenDaysLater.AddHours(-12)
                 && ul.ExpiresAt.Value <= sevenDaysLater.AddHours(12))
@@ -59,9 +60,9 @@ public class LicenseExpiryJob
                 Channels = ["web", "email"],
             });
 
-            await emailService.SendTemplateAsync(license.User.Email, "license_expiring", new Dictionary<string, string>
+            await emailService.SendTemplateAsync(license.User!.Email, "license_expiring", new Dictionary<string, string>
             {
-                ["UserName"] = license.User.FullName,
+                ["UserName"] = license.User!.FullName,
                 ["ProductName"] = license.LicenseProduct.Product.Name,
                 ["PlanName"] = license.LicenseProduct.Name,
                 ["ExpiresAt"] = license.ExpiresAt?.ToString("dd/MM/yyyy HH:mm") ?? "N/A",
@@ -74,6 +75,7 @@ public class LicenseExpiryJob
             .Include(ul => ul.LicenseProduct)
                 .ThenInclude(lp => lp.Product)
             .Where(ul => ul.Status == LicenseStatus.Active
+                && ul.UserId != null
                 && ul.ExpiresAt.HasValue
                 && ul.ExpiresAt.Value > oneDayLater.AddHours(-12)
                 && ul.ExpiresAt.Value <= oneDayLater.AddHours(12))

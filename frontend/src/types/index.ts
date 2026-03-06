@@ -26,9 +26,19 @@ export interface LicensePlan {
   createdAt: string;
 }
 
+export interface LicenseActivation {
+  id: string;
+  hardwareId: string;
+  machineName?: string;
+  ipAddress?: string;
+  activatedAt: string;
+  lastSeenAt: string;
+  isActive: boolean;
+}
+
 export interface License {
   id: string;
-  userId: string;
+  userId?: string;
   userEmail: string;
   productName: string;
   planName: string;

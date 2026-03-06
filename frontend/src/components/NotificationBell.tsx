@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Badge, Button, Popover, List, Typography, Space, Tag, Empty } from "antd";
+import { Badge, Button, Popover, Typography, Space, Tag, Empty, Spin } from "antd";
 import { BellOutlined, CheckOutlined } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { notificationsApi, type NotificationDto } from "@/lib/api/notifications.api";
@@ -102,38 +102,32 @@ export default function NotificationBell() {
       {!notifications?.length && !isLoading ? (
         <Empty description="Không có thông báo" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: 24 }} />
       ) : (
-        <List
-          loading={isLoading}
-          dataSource={notifications}
-          renderItem={(item: NotificationDto) => (
-            <List.Item
+        <Spin spinning={isLoading}>
+          {notifications?.map((item: NotificationDto) => (
+            <div
+              key={item.id}
               style={{
                 padding: "8px 4px",
                 background: item.isRead ? "transparent" : "#f6ffed",
                 cursor: item.isRead ? "default" : "pointer",
+                borderBottom: "1px solid #f0f0f0",
               }}
               onClick={() => { if (!item.isRead) markOneRead.mutate(item.id); }}
             >
-              <List.Item.Meta
-                title={
-                  <Space>
-                    <Tag color={typeColors[item.type] || "default"} style={{ margin: 0 }}>
-                      {item.type}
-                    </Tag>
-                    <Text strong={!item.isRead} style={{ fontSize: 13 }}>{item.title}</Text>
-                  </Space>
-                }
-                description={
-                  <div>
-                    <Text style={{ fontSize: 12 }}>{item.body}</Text>
-                    <br />
-                    <Text type="secondary" style={{ fontSize: 11 }}>{timeAgo(item.createdAt)}</Text>
-                  </div>
-                }
-              />
-            </List.Item>
-          )}
-        />
+              <Space>
+                <Tag color={typeColors[item.type] || "default"} style={{ margin: 0 }}>
+                  {item.type}
+                </Tag>
+                <Text strong={!item.isRead} style={{ fontSize: 13 }}>{item.title}</Text>
+              </Space>
+              <div>
+                <Text style={{ fontSize: 12 }}>{item.body}</Text>
+                <br />
+                <Text type="secondary" style={{ fontSize: 11 }}>{timeAgo(item.createdAt)}</Text>
+              </div>
+            </div>
+          ))}
+        </Spin>
       )}
     </div>
   );
@@ -149,7 +143,7 @@ export default function NotificationBell() {
       placement="bottomRight"
     >
       <Badge count={unreadCount ?? 0} size="small" offset={[-2, 2]}>
-        <Button type="text" icon={<BellOutlined style={{ fontSize: 18, color: "#fff" }} />} />
+        <Button type="text" icon={<BellOutlined style={{ fontSize: 18 }} />} />
       </Badge>
     </Popover>
   );
