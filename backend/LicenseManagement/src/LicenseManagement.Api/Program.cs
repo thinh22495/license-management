@@ -9,7 +9,7 @@ using LicenseManagement.Infrastructure.Jobs;
 using LicenseManagement.Api.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -109,19 +109,13 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT",
     });
 
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(doc =>
     {
+        var schemeRef = new OpenApiSecuritySchemeReference("Bearer");
+        return new OpenApiSecurityRequirement
         {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
+            { schemeRef, new List<string>() }
+        };
     });
 
     // XML comments
