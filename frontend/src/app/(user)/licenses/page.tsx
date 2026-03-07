@@ -14,7 +14,6 @@ import {
   Popconfirm,
   Modal,
   Input,
-  Descriptions,
 } from "antd";
 import {
   CopyOutlined,
@@ -23,6 +22,7 @@ import {
   DesktopOutlined,
   DeleteOutlined,
   EnterOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { licensesApi } from "@/lib/api/licenses.api";
@@ -97,13 +97,20 @@ export default function MyLicensesPage() {
       key: "licenseKey",
       render: (v: string) => (
         <Space>
-          <code style={{ fontSize: 12 }}>{v}</code>
+          <code style={{
+            fontSize: 12,
+            background: "#f5f3ff",
+            padding: "2px 8px",
+            borderRadius: 6,
+            color: "#4f46e5",
+          }}>{v}</code>
           <Tooltip title="Copy">
             <Button
               size="small"
               type="text"
               icon={<CopyOutlined />}
               onClick={() => { navigator.clipboard.writeText(v); message.success("Đã copy!"); }}
+              style={{ color: "#4f46e5" }}
             />
           </Tooltip>
         </Space>
@@ -113,17 +120,17 @@ export default function MyLicensesPage() {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (v: string) => <Tag color={statusColors[v] || "default"}>{v}</Tag>,
+      render: (v: string) => <Tag color={statusColors[v] || "default"} style={{ borderRadius: 6, fontWeight: 500 }}>{v}</Tag>,
     },
     {
       title: "Hết hạn",
       dataIndex: "expiresAt",
       key: "expiresAt",
       render: (v?: string) => {
-        if (!v) return <Tag color="blue">Vĩnh viễn</Tag>;
+        if (!v) return <Tag color="blue" style={{ borderRadius: 6 }}>Vĩnh viễn</Tag>;
         const isExpired = new Date(v) < new Date();
         return (
-          <Text type={isExpired ? "danger" : undefined}>
+          <Text type={isExpired ? "danger" : undefined} strong={isExpired}>
             {formatDate(v)}
           </Text>
         );
@@ -132,7 +139,12 @@ export default function MyLicensesPage() {
     {
       title: "Kích hoạt",
       key: "activations",
-      render: (_: unknown, r: License) => `${r.currentActivations}/${r.maxActivations}`,
+      render: (_: unknown, r: License) => (
+        <Text>
+          <Text strong style={{ color: "#4f46e5" }}>{r.currentActivations}</Text>
+          <Text type="secondary">/{r.maxActivations}</Text>
+        </Text>
+      ),
     },
     {
       title: "Thao tác",
@@ -145,7 +157,7 @@ export default function MyLicensesPage() {
               description="Số dư sẽ bị trừ theo giá gói license."
               onConfirm={() => renew.mutate(record.id)}
             >
-              <Button size="small" icon={<ReloadOutlined />} loading={renew.isPending}>
+              <Button size="small" icon={<ReloadOutlined />} loading={renew.isPending} style={{ borderRadius: 8 }}>
                 Gia hạn
               </Button>
             </Popconfirm>
@@ -157,33 +169,38 @@ export default function MyLicensesPage() {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-        <Title level={3} style={{ margin: 0 }}>License của tôi</Title>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <Title level={3} className="page-title" style={{ margin: 0 }}>
+          <KeyOutlined style={{ marginRight: 10 }} />
+          License của tôi
+        </Title>
         <Space>
-          <Button icon={<EnterOutlined />} onClick={() => setRedeemOpen(true)}>
+          <Button icon={<EnterOutlined />} onClick={() => setRedeemOpen(true)} style={{ borderRadius: 10 }}>
             Nhập key
           </Button>
-          <Button type="primary" icon={<KeyOutlined />} onClick={() => router.push("/products")}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => router.push("/products")} className="btn-gradient" style={{ borderRadius: 10 }}>
             Mua thêm license
           </Button>
         </Space>
       </div>
 
-      <Card>
+      <Card className="enhanced-card" styles={{ body: { padding: 0 } }}>
         {licenses.length === 0 && !isLoading ? (
-          <Empty
-            description="Bạn chưa có license nào"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          >
-            <Space>
-              <Button onClick={() => setRedeemOpen(true)}>
-                Nhập key
-              </Button>
-              <Button type="primary" onClick={() => router.push("/products")}>
-                Mua license ngay
-              </Button>
-            </Space>
-          </Empty>
+          <div style={{ padding: 48 }}>
+            <Empty
+              description="Bạn chưa có license nào"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            >
+              <Space>
+                <Button onClick={() => setRedeemOpen(true)} style={{ borderRadius: 10 }}>
+                  Nhập key
+                </Button>
+                <Button type="primary" onClick={() => router.push("/products")} className="btn-gradient" style={{ borderRadius: 10 }}>
+                  Mua license ngay
+                </Button>
+              </Space>
+            </Empty>
+          </div>
         ) : (
           <Table
             columns={columns}
@@ -200,7 +217,7 @@ export default function MyLicensesPage() {
       </Card>
 
       <Modal
-        title="Nhập License Key"
+        title={<span style={{ fontWeight: 700 }}>Nhập License Key</span>}
         open={redeemOpen}
         onCancel={() => { setRedeemOpen(false); setRedeemKey(""); }}
         onOk={() => redeemKey.trim() && redeem.mutate(redeemKey.trim())}
@@ -209,7 +226,7 @@ export default function MyLicensesPage() {
         confirmLoading={redeem.isPending}
         okButtonProps={{ disabled: !redeemKey.trim() }}
       >
-        <div style={{ marginBottom: 8 }}>
+        <div style={{ marginBottom: 12 }}>
           <Text type="secondary">
             Nhập license key bạn nhận được từ admin hoặc nguồn khác để thêm vào tài khoản.
           </Text>
@@ -221,6 +238,7 @@ export default function MyLicensesPage() {
           onPressEnter={() => redeemKey.trim() && redeem.mutate(redeemKey.trim())}
           size="large"
           autoFocus
+          style={{ borderRadius: 10 }}
         />
       </Modal>
     </div>
@@ -256,8 +274,8 @@ function ActivationsPanel({ license }: { license: License }) {
       key: "device",
       render: (_: unknown, r: LicenseActivation) => (
         <Space>
-          <DesktopOutlined />
-          <Text>{r.machineName || "Không rõ"}</Text>
+          <DesktopOutlined style={{ color: "#4f46e5" }} />
+          <Text strong>{r.machineName || "Không rõ"}</Text>
         </Space>
       ),
     },
@@ -267,7 +285,9 @@ function ActivationsPanel({ license }: { license: License }) {
       key: "hardwareId",
       render: (v: string) => (
         <Tooltip title={v}>
-          <code style={{ fontSize: 11 }}>{v.substring(0, 16)}...</code>
+          <code style={{ fontSize: 11, background: "#f5f3ff", padding: "2px 6px", borderRadius: 4, color: "#4f46e5" }}>
+            {v.substring(0, 16)}...
+          </code>
         </Tooltip>
       ),
     },
@@ -293,7 +313,11 @@ function ActivationsPanel({ license }: { license: License }) {
       title: "Trạng thái",
       dataIndex: "isActive",
       key: "isActive",
-      render: (v: boolean) => <Tag color={v ? "green" : "default"}>{v ? "Đang hoạt động" : "Đã hủy"}</Tag>,
+      render: (v: boolean) => (
+        <Tag color={v ? "green" : "default"} style={{ borderRadius: 6 }}>
+          {v ? "Đang hoạt động" : "Đã hủy"}
+        </Tag>
+      ),
     },
     {
       title: "",
@@ -305,7 +329,7 @@ function ActivationsPanel({ license }: { license: License }) {
             description="Thiết bị sẽ không thể sử dụng license cho đến khi kích hoạt lại."
             onConfirm={() => deactivate.mutate(r.id)}
           >
-            <Button size="small" danger icon={<DeleteOutlined />} loading={deactivate.isPending}>
+            <Button size="small" danger icon={<DeleteOutlined />} loading={deactivate.isPending} style={{ borderRadius: 8 }}>
               Hủy
             </Button>
           </Popconfirm>
@@ -314,8 +338,9 @@ function ActivationsPanel({ license }: { license: License }) {
   ];
 
   return (
-    <div style={{ padding: "8px 0" }}>
-      <Text strong style={{ marginBottom: 8, display: "block" }}>
+    <div style={{ padding: "12px 0" }}>
+      <Text strong style={{ marginBottom: 12, display: "block", color: "#4f46e5" }}>
+        <DesktopOutlined style={{ marginRight: 6 }} />
         Thiết bị đã kích hoạt ({activations.filter((a) => a.isActive).length}/{license.maxActivations})
       </Text>
       <Table

@@ -21,7 +21,7 @@ import {
   PauseCircleOutlined,
   PlayCircleOutlined,
   CopyOutlined,
-  PlusOutlined,
+  KeyOutlined,
   GiftOutlined,
 } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -32,7 +32,7 @@ import { usersApi } from "@/lib/api/users.api";
 import { formatDate, formatVND } from "@/lib/utils/format";
 import type { License, LicensePlan, UserDto, Product } from "@/types";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Search } = Input;
 
 const statusColors: Record<string, string> = {
@@ -49,7 +49,6 @@ export default function AdminLicensesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | undefined>();
 
-  // Create license modal
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm] = Form.useForm();
   const [selectedProductId, setSelectedProductId] = useState<string | undefined>();
@@ -125,9 +124,15 @@ export default function AdminLicensesPage() {
       key: "licenseKey",
       render: (v: string) => (
         <Space>
-          <code style={{ fontSize: 12 }}>{v}</code>
+          <code style={{
+            fontSize: 12,
+            background: "#f5f3ff",
+            padding: "2px 8px",
+            borderRadius: 6,
+            color: "#4f46e5",
+          }}>{v}</code>
           <Tooltip title="Copy">
-            <Button size="small" type="text" icon={<CopyOutlined />} onClick={() => { navigator.clipboard.writeText(v); message.success("Đã copy"); }} />
+            <Button size="small" type="text" icon={<CopyOutlined />} onClick={() => { navigator.clipboard.writeText(v); message.success("Đã copy"); }} style={{ color: "#4f46e5" }} />
           </Tooltip>
         </Space>
       ),
@@ -136,26 +141,31 @@ export default function AdminLicensesPage() {
       title: "Email",
       dataIndex: "userEmail",
       key: "userEmail",
-      render: (v: string) => v || <Tag color="gold">Chưa gán</Tag>,
+      render: (v: string) => v || <Tag color="gold" style={{ borderRadius: 6 }}>Chưa gán</Tag>,
     },
-    { title: "Sản phẩm", dataIndex: "productName", key: "productName" },
+    { title: "Sản phẩm", dataIndex: "productName", key: "productName", render: (v: string) => <Text strong>{v}</Text> },
     { title: "Gói", dataIndex: "planName", key: "planName" },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (v: string) => <Tag color={statusColors[v] || "default"}>{v}</Tag>,
+      render: (v: string) => <Tag color={statusColors[v] || "default"} style={{ borderRadius: 6, fontWeight: 500 }}>{v}</Tag>,
     },
     {
       title: "Hết hạn",
       dataIndex: "expiresAt",
       key: "expiresAt",
-      render: (v?: string) => v ? formatDate(v) : "Vĩnh viễn",
+      render: (v?: string) => v ? formatDate(v) : <Tag color="blue" style={{ borderRadius: 6 }}>Vĩnh viễn</Tag>,
     },
     {
       title: "Kích hoạt",
       key: "activations",
-      render: (_: unknown, r: License) => `${r.currentActivations}/${r.maxActivations}`,
+      render: (_: unknown, r: License) => (
+        <Text>
+          <Text strong style={{ color: "#4f46e5" }}>{r.currentActivations}</Text>
+          <Text type="secondary">/{r.maxActivations}</Text>
+        </Text>
+      ),
     },
     {
       title: "Thao tác",
@@ -165,16 +175,16 @@ export default function AdminLicensesPage() {
           {record.status === "Active" && (
             <>
               <Popconfirm title="Tạm dừng license?" onConfirm={() => suspend.mutate(record.id)}>
-                <Button size="small" icon={<PauseCircleOutlined />}>Tạm dừng</Button>
+                <Button size="small" icon={<PauseCircleOutlined />} style={{ borderRadius: 8 }}>Tạm dừng</Button>
               </Popconfirm>
               <Popconfirm title="Thu hồi license?" onConfirm={() => revoke.mutate(record.id)}>
-                <Button size="small" danger icon={<StopOutlined />}>Thu hồi</Button>
+                <Button size="small" danger icon={<StopOutlined />} style={{ borderRadius: 8 }}>Thu hồi</Button>
               </Popconfirm>
             </>
           )}
           {(record.status === "Suspended" || record.status === "Revoked") && (
             <Popconfirm title="Khôi phục license?" onConfirm={() => reinstate.mutate(record.id)}>
-              <Button size="small" type="primary" icon={<PlayCircleOutlined />}>Khôi phục</Button>
+              <Button size="small" type="primary" icon={<PlayCircleOutlined />} style={{ borderRadius: 8 }}>Khôi phục</Button>
             </Popconfirm>
           )}
         </Space>
@@ -184,35 +194,40 @@ export default function AdminLicensesPage() {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <Title level={3} style={{ margin: 0 }}>Quản lý Licenses</Title>
-        <Button type="primary" icon={<GiftOutlined />} onClick={() => setCreateOpen(true)}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <Title level={3} className="page-title" style={{ margin: 0 }}>
+          <KeyOutlined style={{ marginRight: 10 }} />
+          Quản lý Licenses
+        </Title>
+        <Button type="primary" icon={<GiftOutlined />} onClick={() => setCreateOpen(true)} className="btn-gradient" style={{ borderRadius: 10 }}>
           Tạo / Tặng Key
         </Button>
       </div>
 
-      <Card>
-        <Space style={{ marginBottom: 16 }}>
-          <Search
-            placeholder="Tìm theo key hoặc email..."
-            allowClear
-            onSearch={(v) => { setSearch(v); setPage(1); }}
-            style={{ width: 300 }}
-          />
-          <Select
-            placeholder="Trạng thái"
-            allowClear
-            onChange={(v) => { setStatusFilter(v); setPage(1); }}
-            style={{ width: 150 }}
-            options={[
-              { value: "Active", label: "Active" },
-              { value: "Expired", label: "Expired" },
-              { value: "Revoked", label: "Revoked" },
-              { value: "Suspended", label: "Suspended" },
-              { value: "Pending", label: "Pending" },
-            ]}
-          />
-        </Space>
+      <Card className="enhanced-card" styles={{ body: { padding: "16px 0 0" } }}>
+        <div style={{ padding: "0 16px", marginBottom: 16 }}>
+          <Space>
+            <Search
+              placeholder="Tìm theo key hoặc email..."
+              allowClear
+              onSearch={(v) => { setSearch(v); setPage(1); }}
+              style={{ width: 320 }}
+            />
+            <Select
+              placeholder="Trạng thái"
+              allowClear
+              onChange={(v) => { setStatusFilter(v); setPage(1); }}
+              style={{ width: 160 }}
+              options={[
+                { value: "Active", label: "Active" },
+                { value: "Expired", label: "Expired" },
+                { value: "Revoked", label: "Revoked" },
+                { value: "Suspended", label: "Suspended" },
+                { value: "Pending", label: "Pending" },
+              ]}
+            />
+          </Space>
+        </div>
 
         <Table
           columns={columns}
@@ -231,7 +246,7 @@ export default function AdminLicensesPage() {
 
       {/* Create / Gift License Modal */}
       <Modal
-        title="Tạo / Tặng License Key"
+        title={<Text strong style={{ fontSize: 16 }}>Tạo / Tặng License Key</Text>}
         open={createOpen}
         onOk={() => createForm.submit()}
         onCancel={() => {
@@ -293,7 +308,7 @@ export default function AdminLicensesPage() {
           </Form.Item>
 
           <Form.Item name="note" label="Ghi chú">
-            <Input.TextArea rows={2} placeholder="Lý do tạo/tặng key (không bắt buộc)" />
+            <Input.TextArea rows={2} placeholder="Lý do tạo/tặng key (không bắt buộc)" style={{ borderRadius: 10 }} />
           </Form.Item>
         </Form>
       </Modal>

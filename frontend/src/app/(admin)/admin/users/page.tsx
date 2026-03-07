@@ -23,13 +23,14 @@ import {
   PlusOutlined,
   EditOutlined,
   DollarOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usersApi } from "@/lib/api/users.api";
 import { formatVND, formatDate } from "@/lib/utils/format";
 import type { UserDto, PagedResult } from "@/types";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Search } = Input;
 
 export default function AdminUsersPage() {
@@ -37,7 +38,6 @@ export default function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
 
-  // Modal states
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [topUpOpen, setTopUpOpen] = useState(false);
@@ -120,28 +120,30 @@ export default function AdminUsersPage() {
   };
 
   const columns = [
-    { title: "Email", dataIndex: "email", key: "email" },
+    { title: "Email", dataIndex: "email", key: "email", render: (v: string) => <Text strong>{v}</Text> },
     { title: "Họ tên", dataIndex: "fullName", key: "fullName" },
     { title: "SĐT", dataIndex: "phone", key: "phone" },
     {
       title: "Role",
       dataIndex: "role",
       key: "role",
-      render: (v: string) => <Tag color={v === "Admin" ? "purple" : "blue"}>{v}</Tag>,
+      render: (v: string) => <Tag color={v === "Admin" ? "purple" : "blue"} style={{ borderRadius: 6, fontWeight: 500 }}>{v}</Tag>,
     },
     {
       title: "Số dư",
       dataIndex: "balance",
       key: "balance",
-      render: (v: number) => formatVND(v),
+      render: (v: number) => <Text strong style={{ color: "#10b981" }}>{formatVND(v)}</Text>,
     },
     {
       title: "Trạng thái",
       key: "status",
       render: (_: unknown, r: UserDto) => (
         <Space>
-          {r.isLocked && <Tag color="red">Bị khóa</Tag>}
-          {r.emailVerified ? <Tag color="green">Email verified</Tag> : <Tag>Chưa verify</Tag>}
+          {r.isLocked && <Tag color="red" style={{ borderRadius: 6 }}>Bị khóa</Tag>}
+          {r.emailVerified
+            ? <Tag color="green" style={{ borderRadius: 6 }}>Verified</Tag>
+            : <Tag style={{ borderRadius: 6 }}>Chưa verify</Tag>}
         </Space>
       ),
     },
@@ -156,19 +158,10 @@ export default function AdminUsersPage() {
       key: "actions",
       render: (_: unknown, record: UserDto) => (
         <Space>
-          <Button
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => openEdit(record)}
-          >
+          <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(record)} style={{ borderRadius: 8 }}>
             Sửa
           </Button>
-          <Button
-            size="small"
-            type="primary"
-            icon={<DollarOutlined />}
-            onClick={() => openTopUp(record)}
-          >
+          <Button size="small" type="primary" icon={<DollarOutlined />} onClick={() => openTopUp(record)} style={{ borderRadius: 8 }}>
             Nạp tiền
           </Button>
           {record.role !== "Admin" && (
@@ -180,6 +173,7 @@ export default function AdminUsersPage() {
                 size="small"
                 danger={!record.isLocked}
                 icon={record.isLocked ? <UnlockOutlined /> : <LockOutlined />}
+                style={{ borderRadius: 8 }}
               >
                 {record.isLocked ? "Mở khóa" : "Khóa"}
               </Button>
@@ -192,20 +186,25 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <Title level={3} style={{ margin: 0 }}>Quản lý người dùng</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <Title level={3} className="page-title" style={{ margin: 0 }}>
+          <UserOutlined style={{ marginRight: 10 }} />
+          Quản lý người dùng
+        </Title>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)} className="btn-gradient" style={{ borderRadius: 10 }}>
           Thêm người dùng
         </Button>
       </div>
 
-      <Card>
-        <Search
-          placeholder="Tìm theo email hoặc tên..."
-          allowClear
-          onSearch={(v) => { setSearch(v); setPage(1); }}
-          style={{ width: 300, marginBottom: 16 }}
-        />
+      <Card className="enhanced-card" styles={{ body: { padding: "16px 0 0" } }}>
+        <div style={{ padding: "0 16px", marginBottom: 16 }}>
+          <Search
+            placeholder="Tìm theo email hoặc tên..."
+            allowClear
+            onSearch={(v) => { setSearch(v); setPage(1); }}
+            style={{ width: 320, borderRadius: 10 }}
+          />
+        </div>
 
         <Table
           columns={columns}
@@ -224,7 +223,7 @@ export default function AdminUsersPage() {
 
       {/* Create User Modal */}
       <Modal
-        title="Thêm người dùng"
+        title={<Text strong style={{ fontSize: 16 }}>Thêm người dùng</Text>}
         open={createOpen}
         onOk={() => createForm.submit()}
         onCancel={() => { setCreateOpen(false); createForm.resetFields(); }}
@@ -232,16 +231,16 @@ export default function AdminUsersPage() {
       >
         <Form form={createForm} layout="vertical" onFinish={(v) => createUser.mutate(v)}>
           <Form.Item name="email" label="Email" rules={[{ required: true, type: "email", message: "Vui lòng nhập email hợp lệ" }]}>
-            <Input />
+            <Input style={{ borderRadius: 10 }} />
           </Form.Item>
           <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, min: 6, message: "Mật khẩu tối thiểu 6 ký tự" }]}>
-            <Input.Password />
+            <Input.Password style={{ borderRadius: 10 }} />
           </Form.Item>
           <Form.Item name="fullName" label="Họ tên" rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}>
-            <Input />
+            <Input style={{ borderRadius: 10 }} />
           </Form.Item>
           <Form.Item name="phone" label="Số điện thoại">
-            <Input />
+            <Input style={{ borderRadius: 10 }} />
           </Form.Item>
           <Form.Item name="role" label="Vai trò" initialValue="User">
             <Select>
@@ -254,7 +253,7 @@ export default function AdminUsersPage() {
 
       {/* Edit User Modal */}
       <Modal
-        title={`Sửa người dùng: ${editingUser?.email ?? ""}`}
+        title={<Text strong style={{ fontSize: 16 }}>Sửa người dùng: {editingUser?.email ?? ""}</Text>}
         open={editOpen}
         onOk={() => editForm.submit()}
         onCancel={() => { setEditOpen(false); setEditingUser(null); }}
@@ -266,13 +265,13 @@ export default function AdminUsersPage() {
           onFinish={(v) => editingUser && updateUser.mutate({ id: editingUser.id, ...v })}
         >
           <Form.Item name="email" label="Email" rules={[{ required: true, type: "email", message: "Vui lòng nhập email hợp lệ" }]}>
-            <Input />
+            <Input style={{ borderRadius: 10 }} />
           </Form.Item>
           <Form.Item name="fullName" label="Họ tên" rules={[{ required: true, message: "Vui lòng nhập họ tên" }]}>
-            <Input />
+            <Input style={{ borderRadius: 10 }} />
           </Form.Item>
           <Form.Item name="phone" label="Số điện thoại">
-            <Input />
+            <Input style={{ borderRadius: 10 }} />
           </Form.Item>
           <Form.Item name="role" label="Vai trò">
             <Select>
@@ -288,15 +287,22 @@ export default function AdminUsersPage() {
 
       {/* Top Up Modal */}
       <Modal
-        title={`Nạp tiền cho: ${topUpUser?.email ?? ""}`}
+        title={<Text strong style={{ fontSize: 16 }}>Nạp tiền cho: {topUpUser?.email ?? ""}</Text>}
         open={topUpOpen}
         onOk={() => topUpForm.submit()}
         onCancel={() => { setTopUpOpen(false); setTopUpUser(null); topUpForm.resetFields(); }}
         confirmLoading={topUp.isPending}
       >
         {topUpUser && (
-          <div style={{ marginBottom: 16 }}>
-            <Tag color="blue">Số dư hiện tại: {formatVND(topUpUser.balance)}</Tag>
+          <div style={{
+            background: "linear-gradient(135deg, #f0fdf4, #ecfdf5)",
+            borderRadius: 10,
+            padding: "12px 16px",
+            marginBottom: 16,
+            border: "1px solid #bbf7d0",
+          }}>
+            <Text type="secondary">Số dư hiện tại: </Text>
+            <Text strong style={{ color: "#10b981", fontSize: 16 }}>{formatVND(topUpUser.balance)}</Text>
           </div>
         )}
         <Form
@@ -312,13 +318,13 @@ export default function AdminUsersPage() {
             <InputNumber
               min={1000}
               step={10000}
-              style={{ width: "100%" }}
+              style={{ width: "100%", borderRadius: 10 }}
               formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               parser={(v: string | undefined) => Number(v?.replace(/,/g, "") ?? 0)}
             />
           </Form.Item>
           <Form.Item name="note" label="Ghi chú">
-            <Input.TextArea rows={2} placeholder="Lý do nạp tiền (không bắt buộc)" />
+            <Input.TextArea rows={2} placeholder="Lý do nạp tiền (không bắt buộc)" style={{ borderRadius: 10 }} />
           </Form.Item>
         </Form>
       </Modal>

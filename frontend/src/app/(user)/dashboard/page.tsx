@@ -73,89 +73,99 @@ export default function DashboardPage() {
     message.success("Đã sao chép license key");
   };
 
+  const statCards = [
+    {
+      title: "Số dư tài khoản",
+      value: user.balance,
+      formatter: (v: number) => formatVND(v),
+      icon: <WalletOutlined style={{ fontSize: 28, color: "#fff" }} />,
+      className: "stat-card stat-card-green",
+      link: "/topup",
+      linkText: "Nạp tiền",
+    },
+    {
+      title: "License hoạt động",
+      value: licensesLoading ? 0 : activeLicenses.length,
+      icon: <KeyOutlined style={{ fontSize: 28, color: "#fff" }} />,
+      className: "stat-card stat-card-blue",
+      link: "/licenses",
+      linkText: "Xem chi tiết",
+    },
+    {
+      title: "Sản phẩm có sẵn",
+      value: productsLoading ? 0 : productCount,
+      icon: <ShoppingCartOutlined style={{ fontSize: 28, color: "#fff" }} />,
+      className: "stat-card stat-card-purple",
+      link: "/products",
+      linkText: "Mua license",
+    },
+    {
+      title: "Thông báo mới",
+      value: unreadCount ?? 0,
+      icon: <BellOutlined style={{ fontSize: 28, color: "#fff" }} />,
+      className: "stat-card stat-card-orange",
+      link: "/notifications",
+      linkText: "Xem thông báo",
+    },
+  ];
+
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <Title level={3}>Xin chào, {user.fullName}!</Title>
+      <div style={{ marginBottom: 28 }}>
+        <Title level={3} className="page-title">
+          Xin chào, {user.fullName}!
+        </Title>
         <Text type="secondary">Dashboard quản lý license của bạn</Text>
       </div>
 
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable onClick={() => router.push("/topup")} style={{ height: "100%" }}>
-            <Statistic
-              title="Số dư tài khoản"
-              value={user.balance}
-              formatter={(value) => formatVND(value as number)}
-              prefix={<WalletOutlined style={{ color: "#52c41a" }} />}
-            />
-            <Button
-              type="link"
-              style={{ padding: 0, marginTop: 8 }}
-              icon={<ArrowRightOutlined />}
+      <Row gutter={[20, 20]}>
+        {statCards.map((card, index) => (
+          <Col xs={24} sm={12} lg={6} key={index}>
+            <Card
+              hoverable
+              onClick={() => router.push(card.link)}
+              className={`${card.className} stagger-item animate-fade-in-up`}
+              styles={{ body: { padding: 24, position: "relative", zIndex: 1 } }}
             >
-              Nạp tiền
-            </Button>
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable onClick={() => router.push("/licenses")} style={{ height: "100%" }}>
-            <Statistic
-              title="License đang hoạt động"
-              value={licensesLoading ? "..." : activeLicenses.length}
-              prefix={<KeyOutlined style={{ color: "#1677ff" }} />}
-            />
-            <Button
-              type="link"
-              style={{ padding: 0, marginTop: 8 }}
-              icon={<ArrowRightOutlined />}
-            >
-              Xem chi tiết
-            </Button>
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable onClick={() => router.push("/products")} style={{ height: "100%" }}>
-            <Statistic
-              title="Sản phẩm có sẵn"
-              value={productsLoading ? "..." : productCount}
-              prefix={<ShoppingCartOutlined style={{ color: "#722ed1" }} />}
-            />
-            <Button
-              type="link"
-              style={{ padding: 0, marginTop: 8 }}
-              icon={<ArrowRightOutlined />}
-            >
-              Mua license
-            </Button>
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card hoverable onClick={() => router.push("/notifications")} style={{ height: "100%" }}>
-            <Statistic
-              title="Thông báo mới"
-              value={unreadCount ?? 0}
-              prefix={<BellOutlined style={{ color: "#fa8c16" }} />}
-            />
-            <Button
-              type="link"
-              style={{ padding: 0, marginTop: 8 }}
-              icon={<ArrowRightOutlined />}
-            >
-              Xem thông báo
-            </Button>
-          </Card>
-        </Col>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                <div>
+                  <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 13 }}>{card.title}</Text>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: "#fff", marginTop: 4, lineHeight: 1.2 }}>
+                    {card.formatter ? card.formatter(card.value as number) : card.value}
+                  </div>
+                </div>
+                <div style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 14,
+                  background: "rgba(255,255,255,0.15)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  {card.icon}
+                </div>
+              </div>
+              <Button
+                type="link"
+                style={{ padding: 0, color: "rgba(255,255,255,0.9)", fontWeight: 500, fontSize: 13 }}
+                icon={<ArrowRightOutlined />}
+              >
+                {card.linkText}
+              </Button>
+            </Card>
+          </Col>
+        ))}
       </Row>
 
       {/* Khu vực phần mềm đang sử dụng */}
-      <div style={{ marginTop: 32 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <Title level={4} style={{ margin: 0 }}>
-            <AppstoreOutlined style={{ marginRight: 8 }} />
+      <div style={{ marginTop: 36 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <Title level={4} style={{ margin: 0, fontWeight: 700 }}>
+            <AppstoreOutlined style={{ marginRight: 10, color: "#4f46e5" }} />
             Phần mềm đang sử dụng
           </Title>
-          <Button type="link" onClick={() => router.push("/licenses")}>
+          <Button type="link" onClick={() => router.push("/licenses")} style={{ fontWeight: 500 }}>
             Xem tất cả <ArrowRightOutlined />
           </Button>
         </div>
@@ -163,37 +173,41 @@ export default function DashboardPage() {
         {licensesLoading ? (
           <div style={{ textAlign: "center", padding: 48 }}><Spin size="large" /></div>
         ) : activeLicenses.length === 0 ? (
-          <Card>
+          <Card className="enhanced-card">
             <Empty
               description="Bạn chưa có license nào đang hoạt động"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             >
-              <Button type="primary" onClick={() => router.push("/products")}>
+              <Button type="primary" onClick={() => router.push("/products")} className="btn-gradient">
                 Mua license ngay
               </Button>
             </Empty>
           </Card>
         ) : (
-          <Row gutter={[16, 16]}>
-            {activeLicenses.map((license: License) => (
+          <Row gutter={[20, 20]}>
+            {activeLicenses.map((license: License, index: number) => (
               <Col xs={24} sm={12} lg={8} key={license.id}>
                 <Card
                   hoverable
-                  style={{ height: "100%" }}
-                  styles={{ body: { padding: 20 } }}
+                  className="license-card stagger-item animate-fade-in-up"
+                  styles={{ body: { padding: 24 } }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                     <div>
-                      <Text strong style={{ fontSize: 16 }}>{license.productName}</Text>
-                      <br />
+                      <Text strong style={{ fontSize: 17, display: "block" }}>{license.productName}</Text>
                       <Text type="secondary" style={{ fontSize: 13 }}>{license.planName}</Text>
                     </div>
-                    <Tag color={statusColors[license.status]}>{license.status}</Tag>
+                    <Tag color={statusColors[license.status]} style={{ borderRadius: 6, fontWeight: 500 }}>{license.status}</Tag>
                   </div>
 
-                  <div style={{ background: "#f5f5f5", borderRadius: 6, padding: "8px 12px", marginBottom: 12 }}>
+                  <div style={{
+                    background: "linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%)",
+                    borderRadius: 10,
+                    padding: "10px 14px",
+                    marginBottom: 16,
+                  }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <Text code style={{ fontSize: 12 }}>
+                      <Text code style={{ fontSize: 12, background: "transparent" }}>
                         {license.licenseKey.substring(0, 20)}...
                       </Text>
                       <Tooltip title="Sao chép key">
@@ -202,20 +216,21 @@ export default function DashboardPage() {
                           size="small"
                           icon={<CopyOutlined />}
                           onClick={() => copyKey(license.licenseKey)}
+                          style={{ color: "#4f46e5" }}
                         />
                       </Tooltip>
                     </div>
                   </div>
 
-                  <Space direction="vertical" size={4} style={{ width: "100%" }}>
+                  <Space direction="vertical" size={6} style={{ width: "100%" }}>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <Text type="secondary" style={{ fontSize: 13 }}>Kích hoạt:</Text>
-                      <Text style={{ fontSize: 13 }}>{license.currentActivations}/{license.maxActivations}</Text>
+                      <Text strong style={{ fontSize: 13 }}>{license.currentActivations}/{license.maxActivations}</Text>
                     </div>
                     {license.expiresAt && (
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
                         <Text type="secondary" style={{ fontSize: 13 }}>Hết hạn:</Text>
-                        <Text style={{ fontSize: 13 }}>
+                        <Text strong style={{ fontSize: 13 }}>
                           {new Date(license.expiresAt).toLocaleDateString("vi-VN")}
                         </Text>
                       </div>

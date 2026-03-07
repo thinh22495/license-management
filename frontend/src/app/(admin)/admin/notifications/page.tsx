@@ -12,14 +12,11 @@ import {
   Switch,
   Space,
   Checkbox,
-  Table,
-  Tag,
 } from "antd";
-import { SendOutlined } from "@ant-design/icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { notificationsApi, type NotificationDto } from "@/lib/api/notifications.api";
+import { SendOutlined, BellOutlined } from "@ant-design/icons";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { notificationsApi } from "@/lib/api/notifications.api";
 import { usersApi } from "@/lib/api/users.api";
-import { formatDate } from "@/lib/utils/format";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -27,7 +24,6 @@ const { TextArea } = Input;
 export default function AdminNotificationsPage() {
   const [form] = Form.useForm();
   const [isBroadcast, setIsBroadcast] = useState(true);
-  const queryClient = useQueryClient();
   const { message } = App.useApp();
 
   const { data: usersRes } = useQuery({
@@ -59,12 +55,15 @@ export default function AdminNotificationsPage() {
 
   return (
     <div>
-      <Title level={3}>Gửi thông báo</Title>
+      <Title level={3} className="page-title">
+        <BellOutlined style={{ marginRight: 10 }} />
+        Gửi thông báo
+      </Title>
 
-      <Card style={{ maxWidth: 700 }}>
+      <Card className="enhanced-card" style={{ maxWidth: 700 }}>
         <Form form={form} layout="vertical" onFinish={handleSubmit} initialValues={{ type: "Info", channels: ["web"] }}>
           <Form.Item label="Đối tượng">
-            <Space>
+            <Space align="center">
               <Switch
                 checked={isBroadcast}
                 onChange={setIsBroadcast}
@@ -92,11 +91,11 @@ export default function AdminNotificationsPage() {
           )}
 
           <Form.Item name="title" label="Tiêu đề" rules={[{ required: true }]}>
-            <Input placeholder="Tiêu đề thông báo" />
+            <Input placeholder="Tiêu đề thông báo" style={{ borderRadius: 10 }} />
           </Form.Item>
 
           <Form.Item name="body" label="Nội dung" rules={[{ required: true }]}>
-            <TextArea rows={4} placeholder="Nội dung thông báo" />
+            <TextArea rows={4} placeholder="Nội dung thông báo" style={{ borderRadius: 10 }} />
           </Form.Item>
 
           <Form.Item name="type" label="Loại">
@@ -125,6 +124,8 @@ export default function AdminNotificationsPage() {
             icon={<SendOutlined />}
             loading={sendNotification.isPending}
             size="large"
+            className="btn-gradient"
+            style={{ borderRadius: 10, height: 48, fontWeight: 600 }}
           >
             Gửi thông báo
           </Button>

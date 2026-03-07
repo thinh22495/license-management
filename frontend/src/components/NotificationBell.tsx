@@ -37,7 +37,7 @@ export default function NotificationBell() {
     queryKey: ["notifications-unread-count"],
     queryFn: () => notificationsApi.getUnreadCount(),
     select: (res) => res.data.data ?? 0,
-    refetchInterval: 60_000, // fallback polling every 60s
+    refetchInterval: 60_000,
     enabled: isAuthenticated,
   });
 
@@ -69,10 +69,7 @@ export default function NotificationBell() {
     if (!isAuthenticated || !accessToken) return;
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
-    const eventSource = new EventSource(`${apiUrl}/notifications/stream`, {
-      // Note: EventSource doesn't support custom headers natively
-      // In production, use a polyfill or pass token via query param
-    });
+    const eventSource = new EventSource(`${apiUrl}/notifications/stream`);
 
     eventSource.addEventListener("notification", () => {
       queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
@@ -90,9 +87,15 @@ export default function NotificationBell() {
   }, [isAuthenticated, accessToken, queryClient, open]);
 
   const content = (
-    <div style={{ width: 360, maxHeight: 400, overflow: "auto" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #f0f0f0" }}>
-        <Text strong>Thông báo</Text>
+    <div style={{ width: 380, maxHeight: 440, overflow: "auto" }}>
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "10px 4px 12px",
+        borderBottom: "1px solid #f0f0f0",
+      }}>
+        <Text strong style={{ fontSize: 15 }}>Thông báo</Text>
         {(unreadCount ?? 0) > 0 && (
           <Button size="small" type="link" icon={<CheckOutlined />} onClick={() => markAllRead.mutate()}>
             Đánh dấu tất cả đã đọc
@@ -100,31 +103,31 @@ export default function NotificationBell() {
         )}
       </div>
       {!notifications?.length && !isLoading ? (
-        <Empty description="Không có thông báo" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: 24 }} />
+        <Empty description="Không có thông báo" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ padding: 32 }} />
       ) : (
         <Spin spinning={isLoading}>
           {notifications?.map((item: NotificationDto) => (
             <div
               key={item.id}
               style={{
-                padding: "8px 4px",
-                background: item.isRead ? "transparent" : "#f6ffed",
+                padding: "10px 8px",
+                background: item.isRead ? "transparent" : "#f5f3ff",
                 cursor: item.isRead ? "default" : "pointer",
-                borderBottom: "1px solid #f0f0f0",
+                borderBottom: "1px solid #f5f5f5",
+                borderRadius: 8,
+                margin: "4px 0",
+                transition: "background 0.2s",
               }}
               onClick={() => { if (!item.isRead) markOneRead.mutate(item.id); }}
             >
-              <Space>
-                <Tag color={typeColors[item.type] || "default"} style={{ margin: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <Tag color={typeColors[item.type] || "default"} style={{ margin: 0, borderRadius: 6, fontSize: 11 }}>
                   {item.type}
                 </Tag>
-                <Text strong={!item.isRead} style={{ fontSize: 13 }}>{item.title}</Text>
-              </Space>
-              <div>
-                <Text style={{ fontSize: 12 }}>{item.body}</Text>
-                <br />
-                <Text type="secondary" style={{ fontSize: 11 }}>{timeAgo(item.createdAt)}</Text>
+                <Text strong={!item.isRead} style={{ fontSize: 13, flex: 1 }}>{item.title}</Text>
               </div>
+              <Text style={{ fontSize: 12, color: "#6b7280", display: "block", marginBottom: 2 }}>{item.body}</Text>
+              <Text type="secondary" style={{ fontSize: 11 }}>{timeAgo(item.createdAt)}</Text>
             </div>
           ))}
         </Spin>
@@ -143,7 +146,18 @@ export default function NotificationBell() {
       placement="bottomRight"
     >
       <Badge count={unreadCount ?? 0} size="small" offset={[-2, 2]}>
-        <Button type="text" icon={<BellOutlined style={{ fontSize: 18 }} />} />
+        <Button
+          type="text"
+          icon={<BellOutlined style={{ fontSize: 20 }} />}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        />
       </Badge>
     </Popover>
   );

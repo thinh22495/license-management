@@ -28,11 +28,11 @@ import { notificationsApi, type NotificationDto } from "@/lib/api/notifications.
 
 const { Title, Text, Paragraph } = Typography;
 
-const typeConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-  Info: { color: "blue", icon: <InfoCircleOutlined /> },
-  Warning: { color: "orange", icon: <WarningOutlined /> },
-  Success: { color: "green", icon: <CheckCircleOutlined /> },
-  Error: { color: "red", icon: <CloseCircleOutlined /> },
+const typeConfig: Record<string, { color: string; icon: React.ReactNode; hex: string }> = {
+  Info: { color: "blue", icon: <InfoCircleOutlined />, hex: "#4f46e5" },
+  Warning: { color: "orange", icon: <WarningOutlined />, hex: "#f59e0b" },
+  Success: { color: "green", icon: <CheckCircleOutlined />, hex: "#10b981" },
+  Error: { color: "red", icon: <CloseCircleOutlined />, hex: "#ef4444" },
 };
 
 function timeAgo(dateStr: string): string {
@@ -103,8 +103,8 @@ export default function NotificationsPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <div>
-          <Title level={3} style={{ margin: 0 }}>
-            <BellOutlined style={{ marginRight: 8 }} />
+          <Title level={3} className="page-title" style={{ margin: 0 }}>
+            <BellOutlined style={{ marginRight: 10 }} />
             Thông báo
           </Title>
           <Text type="secondary">Quản lý tất cả thông báo của bạn</Text>
@@ -114,6 +114,7 @@ export default function NotificationsPage() {
             icon={<CheckOutlined />}
             onClick={() => markAllRead.mutate()}
             loading={markAllRead.isPending}
+            style={{ borderRadius: 10 }}
           >
             Đánh dấu tất cả đã đọc
           </Button>
@@ -142,33 +143,36 @@ export default function NotificationsPage() {
       {isLoading ? (
         <div style={{ textAlign: "center", padding: 48 }}><Spin size="large" /></div>
       ) : items.length === 0 ? (
-        <Card>
+        <Card className="enhanced-card">
           <Empty
             description={activeTab === "unread" ? "Không có thông báo chưa đọc" : "Không có thông báo nào"}
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         </Card>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {items.map((item: NotificationDto) => {
             const config = typeConfig[item.type] || typeConfig.Info;
             return (
               <Card
                 key={item.id}
                 size="small"
+                className={`notification-item ${!item.isRead ? "notification-item-unread" : ""}`}
                 style={{
-                  borderLeft: `3px solid ${item.isRead ? "#f0f0f0" : config.color === "blue" ? "#1677ff" : config.color === "orange" ? "#fa8c16" : config.color === "green" ? "#52c41a" : "#ff4d4f"}`,
-                  background: item.isRead ? "#fff" : "#fafafa",
+                  borderRadius: 12,
+                  borderLeft: `4px solid ${item.isRead ? "#e5e7eb" : config.hex}`,
+                  background: item.isRead ? "#fff" : "#faf5ff",
+                  transition: "all 0.2s ease",
                 }}
-                styles={{ body: { padding: "12px 16px" } }}
+                styles={{ body: { padding: "14px 18px" } }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                       <Tag
                         icon={config.icon}
                         color={config.color}
-                        style={{ margin: 0 }}
+                        style={{ margin: 0, borderRadius: 6 }}
                       >
                         {item.type}
                       </Tag>
@@ -180,7 +184,7 @@ export default function NotificationsPage() {
                       )}
                     </div>
                     <Paragraph
-                      style={{ margin: "4px 0 0", color: "#595959", fontSize: 13 }}
+                      style={{ margin: "4px 0 0", color: "#6b7280", fontSize: 13 }}
                       ellipsis={{ rows: 2 }}
                     >
                       {item.body}
@@ -197,6 +201,7 @@ export default function NotificationsPage() {
                         icon={<CheckOutlined />}
                         onClick={() => markOneRead.mutate(item.id)}
                         title="Đánh dấu đã đọc"
+                        style={{ color: "#4f46e5" }}
                       />
                     )}
                     <Popconfirm

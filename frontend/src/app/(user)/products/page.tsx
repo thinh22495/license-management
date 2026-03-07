@@ -14,7 +14,6 @@ import {
   Spin,
   Empty,
   Divider,
-  Progress,
 } from "antd";
 import {
   ShoppingCartOutlined,
@@ -37,7 +36,16 @@ import type { Product, LicensePlan } from "@/types";
 
 const { Title, Text, Paragraph } = Typography;
 
-const productColors = ["#1677ff", "#722ed1", "#13c2c2", "#eb2f96", "#fa8c16", "#52c41a"];
+const productGradients = [
+  "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+  "linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)",
+  "linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)",
+  "linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)",
+  "linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)",
+  "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+];
+
+const productColors = ["#4f46e5", "#06b6d4", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981"];
 
 export default function ProductsPage() {
   const { user } = useAuthStore();
@@ -54,9 +62,9 @@ export default function ProductsPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <Title level={3}>
-          <ShoppingCartOutlined style={{ marginRight: 8 }} />
+      <div style={{ marginBottom: 28 }}>
+        <Title level={3} className="page-title">
+          <ShoppingCartOutlined style={{ marginRight: 10 }} />
           Cửa hàng License
         </Title>
         <Paragraph type="secondary">
@@ -71,57 +79,81 @@ export default function ProductsPage() {
       ) : (
         <Row gutter={[24, 24]}>
           {products.map((product: Product, index: number) => {
+            const gradient = productGradients[index % productGradients.length];
             const color = productColors[index % productColors.length];
             return (
               <Col xs={24} sm={12} lg={8} key={product.id}>
                 <Card
                   hoverable
                   onClick={() => setSelectedProduct(product)}
-                  style={{
-                    height: "100%",
-                    borderTop: `3px solid ${color}`,
-                    overflow: "hidden",
-                  }}
-                  styles={{ body: { padding: 24, display: "flex", flexDirection: "column", height: "100%" } }}
+                  className="product-card stagger-item animate-fade-in-up"
+                  styles={{ body: { padding: 0, display: "flex", flexDirection: "column", height: "100%" } }}
                 >
+                  {/* Gradient header */}
                   <div style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 12,
-                    background: `${color}15`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: 16,
+                    background: gradient,
+                    padding: "28px 24px 24px",
+                    position: "relative",
+                    overflow: "hidden",
                   }}>
-                    <SafetyCertificateOutlined style={{ fontSize: 28, color }} />
+                    <div style={{
+                      position: "absolute",
+                      top: -20,
+                      right: -20,
+                      width: 100,
+                      height: 100,
+                      borderRadius: "50%",
+                      background: "rgba(255,255,255,0.1)",
+                    }} />
+                    <div style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 14,
+                      background: "rgba(255,255,255,0.2)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 12,
+                    }}>
+                      <SafetyCertificateOutlined style={{ fontSize: 28, color: "#fff" }} />
+                    </div>
+                    <Title level={4} style={{ margin: 0, color: "#fff" }}>{product.name}</Title>
                   </div>
 
-                  <Title level={4} style={{ margin: "0 0 8px 0" }}>{product.name}</Title>
-                  <Paragraph
-                    type="secondary"
-                    ellipsis={{ rows: 2 }}
-                    style={{ flex: 1, marginBottom: 16 }}
-                  >
-                    {product.description || "Phần mềm chuyên nghiệp"}
-                  </Paragraph>
+                  {/* Content */}
+                  <div style={{ padding: 24, flex: 1, display: "flex", flexDirection: "column" }}>
+                    <Paragraph
+                      type="secondary"
+                      ellipsis={{ rows: 2 }}
+                      style={{ flex: 1, marginBottom: 16 }}
+                    >
+                      {product.description || "Phần mềm chuyên nghiệp"}
+                    </Paragraph>
 
-                  {product.websiteUrl && (
-                    <div style={{ marginBottom: 12 }}>
-                      <Tag icon={<GlobalOutlined />} color="blue">
-                        {new URL(product.websiteUrl).hostname}
-                      </Tag>
-                    </div>
-                  )}
+                    {product.websiteUrl && (
+                      <div style={{ marginBottom: 16 }}>
+                        <Tag icon={<GlobalOutlined />} color="blue" style={{ borderRadius: 6 }}>
+                          {new URL(product.websiteUrl).hostname}
+                        </Tag>
+                      </div>
+                    )}
 
-                  <Button
-                    type="primary"
-                    block
-                    icon={<ShoppingCartOutlined />}
-                    style={{ background: color, borderColor: color }}
-                  >
-                    Xem gói license
-                  </Button>
+                    <Button
+                      type="primary"
+                      block
+                      size="large"
+                      icon={<ShoppingCartOutlined />}
+                      style={{
+                        background: color,
+                        borderColor: color,
+                        borderRadius: 10,
+                        height: 44,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Xem gói license
+                    </Button>
+                  </div>
                 </Card>
               </Col>
             );
@@ -159,7 +191,6 @@ function PlansModal({ product, open, onClose, userBalance }: { product: Product;
       message.success("Mua license thành công!");
       queryClient.invalidateQueries({ queryKey: ["my-licenses"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      // Refresh user balance from server
       try {
         const res = await apiClient.get("/me");
         const userData = (res.data as any)?.data ?? res.data;
@@ -167,7 +198,7 @@ function PlansModal({ product, open, onClose, userBalance }: { product: Product;
           updateUser({ balance: userData.balance });
         }
       } catch {
-        // fallback: deduct locally
+        // fallback
       }
       onClose();
     },
@@ -187,26 +218,28 @@ function PlansModal({ product, open, onClose, userBalance }: { product: Product;
     <Modal
       title={
         <Space>
-          <SafetyCertificateOutlined style={{ color: "#1677ff" }} />
-          <span>Gói License - {product.name}</span>
+          <SafetyCertificateOutlined style={{ color: "#4f46e5" }} />
+          <span style={{ fontWeight: 700 }}>Gói License - {product.name}</span>
         </Space>
       }
       open={open}
       onCancel={onClose}
       footer={null}
-      width={700}
+      width={720}
+      styles={{ body: { padding: "20px 24px" } }}
     >
       <div style={{
-        background: "#f6f8fa",
-        borderRadius: 8,
-        padding: "12px 16px",
-        marginBottom: 20,
+        background: "linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%)",
+        borderRadius: 12,
+        padding: "14px 20px",
+        marginBottom: 24,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        border: "1px solid #e0e7ff",
       }}>
-        <Text>Số dư hiện tại:</Text>
-        <Text strong style={{ fontSize: 18, color: "#52c41a" }}>{formatVND(userBalance)}</Text>
+        <Text style={{ color: "#6b7280" }}>Số dư hiện tại:</Text>
+        <Text strong style={{ fontSize: 20, color: "#10b981" }}>{formatVND(userBalance)}</Text>
       </div>
 
       {isLoading ? (
@@ -223,56 +256,74 @@ function PlansModal({ product, open, onClose, userBalance }: { product: Product;
                 <Card
                   style={{
                     height: "100%",
-                    border: isPopular ? "2px solid #1677ff" : "1px solid #f0f0f0",
+                    border: isPopular ? "2px solid #4f46e5" : "1px solid #e5e7eb",
+                    borderRadius: 16,
                     position: "relative",
+                    overflow: "hidden",
                   }}
-                  styles={{ body: { padding: 20, textAlign: "center" } }}
+                  styles={{ body: { padding: 24, textAlign: "center" } }}
                 >
                   {isPopular && (
-                    <Tag color="blue" style={{ position: "absolute", top: -1, right: 12 }}>
+                    <div style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: 4,
+                      background: "linear-gradient(90deg, #4f46e5, #7c3aed)",
+                    }} />
+                  )}
+                  {isPopular && (
+                    <Tag color="purple" style={{
+                      position: "absolute",
+                      top: 10,
+                      right: 10,
+                      borderRadius: 6,
+                      fontWeight: 600,
+                    }}>
                       Phổ biến
                     </Tag>
                   )}
 
-                  <div style={{ marginBottom: 12 }}>
+                  <div style={{ marginBottom: 16 }}>
                     <div style={{
-                      width: 48,
-                      height: 48,
+                      width: 52,
+                      height: 52,
                       borderRadius: "50%",
-                      background: isPopular ? "#1677ff" : "#f0f0f0",
-                      color: isPopular ? "#fff" : "#666",
+                      background: isPopular ? "linear-gradient(135deg, #4f46e5, #7c3aed)" : "#f3f4f6",
+                      color: isPopular ? "#fff" : "#6b7280",
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: 20,
-                      marginBottom: 8,
+                      fontSize: 22,
+                      marginBottom: 12,
                     }}>
                       {getPlanIcon(index)}
                     </div>
-                    <Title level={5} style={{ margin: "8px 0 4px" }}>{plan.name}</Title>
+                    <Title level={5} style={{ margin: "0 0 4px", fontWeight: 700 }}>{plan.name}</Title>
                   </div>
 
-                  <div style={{ marginBottom: 16 }}>
-                    <Text strong style={{ fontSize: 24, color: "#1677ff" }}>
+                  <div style={{ marginBottom: 20 }}>
+                    <Text strong style={{ fontSize: 28, color: "#4f46e5", fontWeight: 800 }}>
                       {formatVND(plan.price)}
                     </Text>
                   </div>
 
-                  <Space direction="vertical" size={8} style={{ width: "100%", marginBottom: 16, textAlign: "left" }}>
-                    <div>
-                      <ClockCircleOutlined style={{ marginRight: 8, color: "#8c8c8c" }} />
+                  <Space direction="vertical" size={10} style={{ width: "100%", marginBottom: 20, textAlign: "left" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <ClockCircleOutlined style={{ color: "#9ca3af" }} />
                       <Text>{plan.durationDays === 0 ? "Vĩnh viễn" : `${plan.durationDays} ngày`}</Text>
                     </div>
-                    <div>
-                      <TeamOutlined style={{ marginRight: 8, color: "#8c8c8c" }} />
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <TeamOutlined style={{ color: "#9ca3af" }} />
                       <Text>{plan.maxActivations} thiết bị</Text>
                     </div>
                     {plan.features && (() => {
                       try {
                         const features = JSON.parse(plan.features);
                         return Array.isArray(features) ? features.map((f: string, i: number) => (
-                          <div key={i}>
-                            <CheckCircleOutlined style={{ marginRight: 8, color: "#52c41a" }} />
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <CheckCircleOutlined style={{ color: "#10b981" }} />
                             <Text>{f}</Text>
                           </div>
                         )) : null;
@@ -287,6 +338,8 @@ function PlansModal({ product, open, onClose, userBalance }: { product: Product;
                     icon={<ShoppingCartOutlined />}
                     disabled={!canAfford}
                     loading={purchase.isPending}
+                    className={isPopular ? "btn-gradient" : ""}
+                    style={{ borderRadius: 10, height: 44, fontWeight: 600 }}
                     onClick={(e) => {
                       e.stopPropagation();
                       Modal.confirm({
@@ -296,7 +349,7 @@ function PlansModal({ product, open, onClose, userBalance }: { product: Product;
                             <p>Gói: <strong>{plan.name}</strong></p>
                             <p>Giá: <strong>{formatVND(plan.price)}</strong></p>
                             <Divider style={{ margin: "8px 0" }} />
-                            <p>Số dư sau khi mua: <strong style={{ color: "#52c41a" }}>{formatVND(userBalance - plan.price)}</strong></p>
+                            <p>Số dư sau khi mua: <strong style={{ color: "#10b981" }}>{formatVND(userBalance - plan.price)}</strong></p>
                           </div>
                         ),
                         okText: "Mua ngay",

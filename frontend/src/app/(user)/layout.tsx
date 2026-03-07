@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Layout, Menu, Button, Avatar, Dropdown, Typography, Space, Badge } from "antd";
+import { Layout, Menu, Button, Avatar, Dropdown, Typography, Space } from "antd";
 import {
   DashboardOutlined,
   KeyOutlined,
@@ -15,6 +15,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   BellOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { formatVND } from "@/lib/utils/format";
@@ -59,7 +60,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         ? [{ key: "admin", icon: <DashboardOutlined />, label: "Admin Panel", onClick: () => router.push("/admin/dashboard") }]
         : []),
       { type: "divider" as const },
-      { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất", onClick: handleLogout },
+      { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất", onClick: handleLogout, danger: true },
     ],
   };
 
@@ -69,13 +70,47 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         trigger={null}
         collapsible
         collapsed={collapsed}
-        theme="dark"
-        style={{ position: "fixed", left: 0, top: 0, bottom: 0, zIndex: 100 }}
+        width={240}
+        className="custom-sidebar"
+        style={{
+          position: "fixed",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          zIndex: 100,
+          background: "linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%)",
+          boxShadow: "4px 0 20px rgba(0, 0, 0, 0.15)",
+        }}
       >
-        <div style={{ height: 64, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
-          <Text strong style={{ color: "#fff", fontSize: collapsed ? 14 : 16 }}>
-            {collapsed ? "LM" : "License Manager"}
-          </Text>
+        <div className="logo-area">
+          {collapsed ? (
+            <div style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: "rgba(255,255,255,0.1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}>
+              <SafetyCertificateOutlined style={{ fontSize: 20, color: "#a5b4fc" }} />
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                background: "rgba(255,255,255,0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <SafetyCertificateOutlined style={{ fontSize: 20, color: "#a5b4fc" }} />
+              </div>
+              <span className="logo-text">LicenseHub</span>
+            </div>
+          )}
         </div>
         <Menu
           theme="dark"
@@ -83,34 +118,66 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
           selectedKeys={[pathname]}
           items={menuItems}
           onClick={({ key }) => router.push(key)}
+          style={{ background: "transparent", border: "none" }}
         />
       </Sider>
-      <Layout style={{ marginLeft: collapsed ? 80 : 200, transition: "margin-left 0.2s" }}>
-        <Header style={{
-          padding: "0 24px",
-          background: "#fff",
+      <Layout style={{ marginLeft: collapsed ? 80 : 240, transition: "margin-left 0.2s ease" }}>
+        <Header className="app-header" style={{
+          padding: "0 28px",
+          height: 64,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: "1px solid #f0f0f0",
+          position: "sticky",
+          top: 0,
+          zIndex: 99,
         }}>
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
+            style={{ fontSize: 16, width: 40, height: 40 }}
           />
-          <Space size="middle">
-            <Text strong style={{ color: "#1677ff" }}>{formatVND(user.balance)}</Text>
+          <Space size="middle" align="center">
+            <div style={{
+              background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)",
+              borderRadius: 10,
+              padding: "6px 14px",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}>
+              <WalletOutlined style={{ color: "#4f46e5" }} />
+              <Text strong className="balance-display">{formatVND(user.balance)}</Text>
+            </div>
             <NotificationBell />
             <Dropdown menu={userMenu} placement="bottomRight">
-              <div style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}>
-                <Avatar icon={<UserOutlined />} />
-                <Text>{user.fullName}</Text>
+              <div style={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "4px 8px",
+                borderRadius: 10,
+                transition: "background 0.2s",
+              }}>
+                <Avatar
+                  style={{
+                    background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+                    fontWeight: 600,
+                  }}
+                >
+                  {user.fullName?.charAt(0)?.toUpperCase()}
+                </Avatar>
+                <div style={{ lineHeight: 1.3 }}>
+                  <Text strong style={{ fontSize: 13, display: "block" }}>{user.fullName}</Text>
+                  <Text type="secondary" style={{ fontSize: 11 }}>{user.role}</Text>
+                </div>
               </div>
             </Dropdown>
           </Space>
         </Header>
-        <Content style={{ margin: 24, minHeight: 280 }}>
+        <Content className="content-area" style={{ background: "#f0f2f5" }}>
           {children}
         </Content>
       </Layout>
