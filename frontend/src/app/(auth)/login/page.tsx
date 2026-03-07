@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Form, Input, Button, Card, Typography, message, Space } from "antd";
+import { Form, Input, Button, Card, Typography, Space, App } from "antd";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { authApi } from "@/lib/api/auth.api";
@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const { message } = App.useApp();
 
   const onFinish = async (values: LoginRequest) => {
     setLoading(true);

@@ -8,7 +8,7 @@ import {
   Select,
   Button,
   Typography,
-  message,
+  App,
   Switch,
   Space,
   Checkbox,
@@ -28,6 +28,7 @@ export default function AdminNotificationsPage() {
   const [form] = Form.useForm();
   const [isBroadcast, setIsBroadcast] = useState(true);
   const queryClient = useQueryClient();
+  const { message } = App.useApp();
 
   const { data: usersRes } = useQuery({
     queryKey: ["admin-users-select"],

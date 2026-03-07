@@ -127,10 +127,10 @@ export default function AdminDashboardPage() {
                     xField="date"
                     yField="amount"
                     height={300}
-                    smooth
-                    point={{ size: 3 }}
-                    yAxis={{ label: { formatter: (v: string) => formatVND(Number(v)) } }}
-                    tooltip={{ formatter: (datum: any) => ({ name: "Doanh thu", value: formatVND(datum.amount) }) }}
+                    shapeField="smooth"
+                    style={{ lineWidth: 2 }}
+                    axis={{ y: { labelFormatter: (v: number) => formatVND(v) } }}
+                    tooltip={{ items: [{ channel: "y", name: "Doanh thu", valueFormatter: (v: number) => formatVND(v) }] }}
                   />
                 )}
               </Card>
@@ -145,8 +145,8 @@ export default function AdminDashboardPage() {
                     height={300}
                     radius={0.8}
                     innerRadius={0.6}
-                    label={{ type: "inner", content: (item: any) => `${(item.percentage * 100).toFixed(1)}%` }}
-                    tooltip={{ formatter: (datum: any) => ({ name: datum.productName, value: formatVND(datum.revenue) }) }}
+                    label={false}
+                    tooltip={{ items: [{ channel: "y", name: "Doanh thu", valueFormatter: (v: number) => formatVND(v) }] }}
                   />
                 ) : (
                   <div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center", color: "#999" }}>
@@ -167,8 +167,8 @@ export default function AdminDashboardPage() {
                     xField="date"
                     yField="count"
                     height={250}
-                    color="#1677ff"
-                    tooltip={{ formatter: (datum: any) => ({ name: "Licenses", value: datum.count }) }}
+                    style={{ fill: "#1677ff" }}
+                    tooltip={{ items: [{ channel: "y", name: "Licenses" }] }}
                   />
                 )}
               </Card>
@@ -181,8 +181,8 @@ export default function AdminDashboardPage() {
                     xField="date"
                     yField="count"
                     height={250}
-                    color="#52c41a"
-                    tooltip={{ formatter: (datum: any) => ({ name: "Users", value: datum.count }) }}
+                    style={{ fill: "#52c41a" }}
+                    tooltip={{ items: [{ channel: "y", name: "Users" }] }}
                   />
                 )}
               </Card>

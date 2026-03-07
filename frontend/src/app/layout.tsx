@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
+import { App } from "antd";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -17,7 +18,9 @@ export default function RootLayout({
     <html lang="vi">
       <body>
         <AntdRegistry>
-          <Providers>{children}</Providers>
+          <App>
+            <Providers>{children}</Providers>
+          </App>
         </AntdRegistry>
       </body>
     </html>

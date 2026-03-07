@@ -173,7 +173,7 @@ docker compose up --build
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@licensemanagement.com | Admin@123 |
+| Admin | thinh95.tranhuu@gmail.com | Admin@123 |
 | User | user@demo.com | User@123 |
 
 Seed data bao gồm 3 sản phẩm mẫu (ScreenCapture Pro, CodeEditor Ultimate, DataSync Manager) và 7 gói license.
