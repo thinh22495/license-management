@@ -10,7 +10,7 @@ import {
   Input,
   Select,
   Typography,
-  message,
+  App,
   Popconfirm,
   Tooltip,
   Modal,
@@ -44,6 +44,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AdminLicensesPage() {
+  const { message } = App.useApp();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");

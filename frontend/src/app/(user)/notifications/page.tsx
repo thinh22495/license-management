@@ -12,7 +12,7 @@ import {
   Popconfirm,
   Tabs,
   Badge,
-  message,
+  App,
 } from "antd";
 import {
   BellOutlined,
@@ -47,6 +47,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function NotificationsPage() {
+  const { message } = App.useApp();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>("all");
 

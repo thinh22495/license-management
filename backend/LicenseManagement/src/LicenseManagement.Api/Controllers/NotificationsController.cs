@@ -133,6 +133,41 @@ public class NotificationsController : ControllerBase
         }
     }
 
+    [HttpGet("all")]
+    [Authorize(Roles = "Admin")]
+    [SwaggerOperation(
+        Summary = "[Admin] Lấy tất cả thông báo",
+        Description = "Trả về danh sách tất cả thông báo trong hệ thống có phân trang. Hỗ trợ tìm kiếm theo tiêu đề, nội dung, email. Chỉ Admin mới có quyền sử dụng.")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? search = null, [FromQuery] string? type = null)
+    {
+        var result = await _mediator.Send(new GetAllNotificationsQuery
+        {
+            Page = page,
+            PageSize = pageSize,
+            Search = search,
+            Type = type,
+        });
+        return Ok(result);
+    }
+
+    [HttpDelete("admin/{id:guid}")]
+    [Authorize(Roles = "Admin")]
+    [SwaggerOperation(
+        Summary = "[Admin] Xoá thông báo",
+        Description = "Admin xoá bất kỳ thông báo nào trong hệ thống theo ID.")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> AdminDelete(Guid id)
+    {
+        var notification = await _mediator.Send(new AdminDeleteNotificationCommand { NotificationId = id });
+        return notification.Success ? Ok(notification) : BadRequest(notification);
+    }
+
     [HttpPost("send")]
     [Authorize(Roles = "Admin")]
     [SwaggerOperation(

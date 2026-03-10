@@ -9,7 +9,7 @@ import {
   Button,
   Input,
   Typography,
-  message,
+  App,
   Popconfirm,
   Modal,
   Form,
@@ -34,6 +34,7 @@ const { Title, Text } = Typography;
 const { Search } = Input;
 
 export default function AdminUsersPage() {
+  const { message } = App.useApp();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");

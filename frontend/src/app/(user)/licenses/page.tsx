@@ -8,7 +8,7 @@ import {
   Space,
   Button,
   Typography,
-  message,
+  App,
   Tooltip,
   Empty,
   Popconfirm,
@@ -41,6 +41,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function MyLicensesPage() {
+  const { message } = App.useApp();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [redeemOpen, setRedeemOpen] = useState(false);
@@ -246,6 +247,7 @@ export default function MyLicensesPage() {
 }
 
 function ActivationsPanel({ license }: { license: License }) {
+  const { message } = App.useApp();
   const queryClient = useQueryClient();
 
   const { data: activationsRes, isLoading } = useQuery({

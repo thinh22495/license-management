@@ -10,7 +10,7 @@ import {
   Button,
   Modal,
   Space,
-  message,
+  App,
   Spin,
   Empty,
   Divider,
@@ -87,6 +87,7 @@ export default function ProductsPage() {
                   hoverable
                   onClick={() => setSelectedProduct(product)}
                   className="product-card stagger-item animate-fade-in-up"
+                  style={{ height: "100%" }}
                   styles={{ body: { padding: 0, display: "flex", flexDirection: "column", height: "100%" } }}
                 >
                   {/* Gradient header */}
@@ -174,6 +175,7 @@ export default function ProductsPage() {
 }
 
 function PlansModal({ product, open, onClose, userBalance }: { product: Product; open: boolean; onClose: () => void; userBalance: number }) {
+  const { message } = App.useApp();
   const queryClient = useQueryClient();
   const { updateUser } = useAuthStore();
 
@@ -261,7 +263,7 @@ function PlansModal({ product, open, onClose, userBalance }: { product: Product;
                     position: "relative",
                     overflow: "hidden",
                   }}
-                  styles={{ body: { padding: 24, textAlign: "center" } }}
+                  styles={{ body: { padding: 24, textAlign: "center", display: "flex", flexDirection: "column", height: "100%" } }}
                 >
                   {isPopular && (
                     <div style={{
@@ -309,7 +311,7 @@ function PlansModal({ product, open, onClose, userBalance }: { product: Product;
                     </Text>
                   </div>
 
-                  <Space direction="vertical" size={10} style={{ width: "100%", marginBottom: 20, textAlign: "left" }}>
+                  <Space orientation="vertical" size={10} style={{ width: "100%", marginBottom: 20, textAlign: "left", flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <ClockCircleOutlined style={{ color: "#9ca3af" }} />
                       <Text>{plan.durationDays === 0 ? "Vĩnh viễn" : `${plan.durationDays} ngày`}</Text>
@@ -339,7 +341,7 @@ function PlansModal({ product, open, onClose, userBalance }: { product: Product;
                     disabled={!canAfford}
                     loading={purchase.isPending}
                     className={isPopular ? "btn-gradient" : ""}
-                    style={{ borderRadius: 10, height: 44, fontWeight: 600 }}
+                    style={{ borderRadius: 10, height: 44, fontWeight: 600, marginTop: "auto" }}
                     onClick={(e) => {
                       e.stopPropagation();
                       Modal.confirm({

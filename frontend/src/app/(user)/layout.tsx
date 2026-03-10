@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Layout, Menu, Button, Avatar, Dropdown, Typography, Space } from "antd";
+import { Layout, Menu, Button, Avatar, Dropdown, Typography, Space, Tooltip } from "antd";
 import {
   DashboardOutlined,
   KeyOutlined,
@@ -16,6 +16,7 @@ import {
   MenuUnfoldOutlined,
   BellOutlined,
   SafetyCertificateOutlined,
+  RightOutlined,
 } from "@ant-design/icons";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { formatVND } from "@/lib/utils/format";
@@ -24,12 +25,18 @@ import NotificationBell from "@/components/NotificationBell";
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
 
-const menuItems = [
+const mainMenuItems = [
   { key: "/dashboard", icon: <DashboardOutlined />, label: "Dashboard" },
   { key: "/products", icon: <ShoppingCartOutlined />, label: "Mua License" },
   { key: "/licenses", icon: <KeyOutlined />, label: "License của tôi" },
+];
+
+const financeMenuItems = [
   { key: "/topup", icon: <WalletOutlined />, label: "Nạp tiền" },
   { key: "/transactions", icon: <HistoryOutlined />, label: "Lịch sử GD" },
+];
+
+const otherMenuItems = [
   { key: "/notifications", icon: <BellOutlined />, label: "Thông báo" },
 ];
 
@@ -71,57 +78,146 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         collapsible
         collapsed={collapsed}
         width={240}
-        className="custom-sidebar"
+        collapsedWidth={72}
+        className="custom-sidebar sidebar-user"
         style={{
           position: "fixed",
           left: 0,
           top: 0,
           bottom: 0,
           zIndex: 100,
-          background: "linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%)",
-          boxShadow: "4px 0 20px rgba(0, 0, 0, 0.15)",
+          background: "linear-gradient(180deg, #1a1640 0%, #252060 50%, #1a1640 100%)",
+          boxShadow: "2px 0 24px rgba(0, 0, 0, 0.2)",
+          borderRight: "1px solid rgba(255, 255, 255, 0.04)",
+          overflow: "hidden",
         }}
       >
-        <div className="logo-area">
+        {/* Decorative glow */}
+        <div className="sidebar-glow sidebar-glow-user" />
+
+        {/* Logo */}
+        <div className="logo-area" style={{ position: "relative", zIndex: 1 }}>
           {collapsed ? (
             <div style={{
-              width: 40,
-              height: 40,
-              borderRadius: 12,
-              background: "rgba(255,255,255,0.1)",
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: "linear-gradient(135deg, rgba(165, 180, 252, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              border: "1px solid rgba(165, 180, 252, 0.15)",
             }}>
-              <SafetyCertificateOutlined style={{ fontSize: 20, color: "#a5b4fc" }} />
+              <SafetyCertificateOutlined style={{ fontSize: 18, color: "#a5b4fc" }} />
             </div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%" }}>
               <div style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
-                background: "rgba(255,255,255,0.1)",
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: "linear-gradient(135deg, rgba(165, 180, 252, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                border: "1px solid rgba(165, 180, 252, 0.15)",
+                flexShrink: 0,
               }}>
-                <SafetyCertificateOutlined style={{ fontSize: 20, color: "#a5b4fc" }} />
+                <SafetyCertificateOutlined style={{ fontSize: 18, color: "#a5b4fc" }} />
               </div>
-              <span className="logo-text">LicenseHub</span>
+              <div>
+                <span className="logo-text">LicenseHub</span>
+                <div className="logo-subtitle">Management</div>
+              </div>
             </div>
           )}
         </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[pathname]}
-          items={menuItems}
-          onClick={({ key }) => router.push(key)}
-          style={{ background: "transparent", border: "none" }}
-        />
+
+        {/* Menu sections */}
+        <div style={{ flex: 1, overflow: "auto", paddingTop: 4 }}>
+          {collapsed ? (
+            <div className="sidebar-section-label-collapsed"><div className="sidebar-divider-line" /></div>
+          ) : (
+            <div className="sidebar-section-label">Tổng quan</div>
+          )}
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[pathname]}
+            items={mainMenuItems}
+            onClick={({ key }) => router.push(key)}
+            style={{ background: "transparent", border: "none" }}
+          />
+
+          {collapsed ? (
+            <div className="sidebar-section-label-collapsed"><div className="sidebar-divider-line" /></div>
+          ) : (
+            <div className="sidebar-section-label">Tài chính</div>
+          )}
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[pathname]}
+            items={financeMenuItems}
+            onClick={({ key }) => router.push(key)}
+            style={{ background: "transparent", border: "none" }}
+          />
+
+          {collapsed ? (
+            <div className="sidebar-section-label-collapsed"><div className="sidebar-divider-line" /></div>
+          ) : (
+            <div className="sidebar-section-label">Khác</div>
+          )}
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[pathname]}
+            items={otherMenuItems}
+            onClick={({ key }) => router.push(key)}
+            style={{ background: "transparent", border: "none" }}
+          />
+        </div>
+
+        {/* Bottom profile */}
+        <Tooltip title={collapsed ? user.fullName : ""} placement="right">
+          <div
+            className={`sidebar-profile ${collapsed ? "sidebar-profile-collapsed" : ""}`}
+            onClick={() => router.push("/profile")}
+          >
+            <Avatar
+              size={collapsed ? 32 : 34}
+              style={{
+                background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
+                fontWeight: 700,
+                fontSize: collapsed ? 13 : 14,
+                flexShrink: 0,
+              }}
+            >
+              {user.fullName?.charAt(0)?.toUpperCase()}
+            </Avatar>
+            {!collapsed && (
+              <>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    color: "rgba(255,255,255,0.9)",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}>{user.fullName}</div>
+                  <div style={{
+                    color: "rgba(255,255,255,0.35)",
+                    fontSize: 11,
+                  }}>{formatVND(user.balance)}</div>
+                </div>
+                <RightOutlined style={{ color: "rgba(255,255,255,0.2)", fontSize: 10 }} />
+              </>
+            )}
+          </div>
+        </Tooltip>
       </Sider>
-      <Layout style={{ marginLeft: collapsed ? 80 : 240, transition: "margin-left 0.2s ease" }}>
+      <Layout style={{ marginLeft: collapsed ? 72 : 240, transition: "margin-left 0.2s ease" }}>
         <Header className="app-header" style={{
           padding: "0 28px",
           height: 64,

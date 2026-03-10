@@ -25,12 +25,12 @@ export default function LoginPage() {
 
       if (data) {
         setAuth(data.accessToken, data.user);
-        message.success("Dang nhap thanh cong!");
+        message.success("Đăng nhập thành công!");
         router.push(data.user.role === "Admin" ? "/admin/dashboard" : "/dashboard");
       }
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
-      message.error(err.response?.data?.message || "Dang nhap that bai");
+      message.error(err.response?.data?.message || "Đăng nhập thất bại");
     } finally {
       setLoading(false);
     }
@@ -60,24 +60,24 @@ export default function LoginPage() {
               License Manager
             </Title>
             <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 14 }}>
-              He thong quan ly license chuyen nghiep
+              Hệ thống quản lý license chuyên nghiệp
             </Text>
           </div>
 
           <Card className="auth-card" styles={{ body: { padding: "36px 32px" } }}>
             <div style={{ textAlign: "center", marginBottom: 28 }}>
               <Title level={3} style={{ marginBottom: 4, fontWeight: 700 }}>
-                Chao mung tro lai
+                Chào mừng trở lại
               </Title>
-              <Text type="secondary">Dang nhap de tiep tuc</Text>
+              <Text type="secondary">Đăng nhập để tiếp tục</Text>
             </div>
 
             <Form layout="vertical" onFinish={onFinish} autoComplete="off" size="large">
               <Form.Item
                 name="email"
                 rules={[
-                  { required: true, message: "Vui long nhap email" },
-                  { type: "email", message: "Email khong hop le" },
+                  { required: true, message: "Vui lòng nhập email" },
+                  { type: "email", message: "Email không hợp lệ" },
                 ]}
               >
                 <Input
@@ -89,11 +89,11 @@ export default function LoginPage() {
 
               <Form.Item
                 name="password"
-                rules={[{ required: true, message: "Vui long nhap mat khau" }]}
+                rules={[{ required: true, message: "Vui lòng nhập mật khẩu" }]}
               >
                 <Input.Password
                   prefix={<LockOutlined style={{ color: "#a5b4fc" }} />}
-                  placeholder="Mat khau"
+                  placeholder="Mật khẩu"
                   style={{ borderRadius: 12, height: 48 }}
                 />
               </Form.Item>
@@ -107,15 +107,15 @@ export default function LoginPage() {
                   className="btn-gradient"
                   style={{ height: 48, borderRadius: 12, fontSize: 16, fontWeight: 600 }}
                 >
-                  Dang nhap
+                  Đăng nhập
                 </Button>
               </Form.Item>
             </Form>
 
             <div style={{ textAlign: "center" }}>
               <Text type="secondary">
-                Chua co tai khoan?{" "}
-                <Link href="/register" style={{ fontWeight: 600 }}>Dang ky ngay</Link>
+                Chưa có tài khoản?{" "}
+                <Link href="/register" style={{ fontWeight: 600 }}>Đăng ký ngay</Link>
               </Text>
             </div>
           </Card>

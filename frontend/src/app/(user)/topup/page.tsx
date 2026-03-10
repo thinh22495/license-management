@@ -10,7 +10,7 @@ import {
   InputNumber,
   Radio,
   Space,
-  message,
+  App,
   Divider,
   Alert,
 } from "antd";
@@ -35,6 +35,7 @@ const paymentMethods = [
 ];
 
 export default function TopUpPage() {
+  const { message } = App.useApp();
   const { user } = useAuthStore();
   const [amount, setAmount] = useState<number>(100_000);
   const [paymentMethod, setPaymentMethod] = useState<string>("momo");
@@ -195,7 +196,7 @@ export default function TopUpPage() {
             type="info"
             showIcon
             style={{ marginTop: 16, borderRadius: 12, border: "1px solid #c7d2fe" }}
-            message={<Text strong>Lưu ý</Text>}
+            title={<Text strong>Lưu ý</Text>}
             description="Tiền nạp sẽ được cộng vào tài khoản ngay sau khi thanh toán thành công. Mọi giao dịch đều được ghi nhận trong lịch sử."
           />
         </Col>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Form, Input, Button, Typography, message, Descriptions, Avatar, Space } from "antd";
+import { Card, Form, Input, Button, Typography, App, Descriptions, Avatar, Space } from "antd";
 import { UserOutlined, MailOutlined, SafetyCertificateOutlined, WalletOutlined, SaveOutlined } from "@ant-design/icons";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { formatVND } from "@/lib/utils/format";
@@ -9,6 +9,7 @@ import apiClient from "@/lib/api/client";
 const { Title, Text } = Typography;
 
 export default function ProfilePage() {
+  const { message } = App.useApp();
   const { user } = useAuthStore();
   const [form] = Form.useForm();
 
@@ -50,7 +51,7 @@ export default function ProfilePage() {
         </div>
 
         <div style={{ padding: "20px 24px" }}>
-          <Space direction="vertical" style={{ width: "100%" }} size={12}>
+          <Space orientation="vertical" style={{ width: "100%" }} size={12}>
             <div style={{
               display: "flex",
               justifyContent: "space-between",

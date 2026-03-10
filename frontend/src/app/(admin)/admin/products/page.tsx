@@ -12,7 +12,7 @@ import {
   Space,
   Typography,
   Tag,
-  message,
+  App,
   Popconfirm,
   InputNumber,
 } from "antd";
@@ -27,6 +27,7 @@ const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 export default function AdminProductsPage() {
+  const { message } = App.useApp();
   const queryClient = useQueryClient();
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [planModalOpen, setPlanModalOpen] = useState(false);
@@ -246,7 +247,11 @@ export default function AdminProductsPage() {
 }
 
 function PlansTable({ productId }: { productId: string }) {
+  const { message } = App.useApp();
   const queryClient = useQueryClient();
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<LicensePlan | null>(null);
+  const [editPlanForm] = Form.useForm();
 
   const { data: plansRes, isLoading } = useQuery({
     queryKey: ["plans", productId],
@@ -262,6 +267,25 @@ function PlansTable({ productId }: { productId: string }) {
       queryClient.invalidateQueries({ queryKey: ["plans", productId] });
     },
   });
+
+  const updatePlan = useMutation({
+    mutationFn: ({ id, ...data }: { id: string; name?: string; durationDays?: number; maxActivations?: number; price?: number; features?: string; isActive?: boolean }) =>
+      plansApi.update(id, data),
+    onSuccess: () => {
+      message.success("Cập nhật gói thành công");
+      queryClient.invalidateQueries({ queryKey: ["plans", productId] });
+      setEditModalOpen(false);
+      setEditingPlan(null);
+      editPlanForm.resetFields();
+    },
+    onError: () => message.error("Lỗi khi cập nhật gói"),
+  });
+
+  const handleEditPlan = (plan: LicensePlan) => {
+    setEditingPlan(plan);
+    editPlanForm.setFieldsValue(plan);
+    setEditModalOpen(true);
+  };
 
   const plans = plansRes ?? [];
 
@@ -290,21 +314,60 @@ function PlansTable({ productId }: { productId: string }) {
       title: "",
       key: "actions",
       render: (_: unknown, record: LicensePlan) => (
-        <Popconfirm title="Xóa gói này?" onConfirm={() => deletePlan.mutate(record.id)}>
-          <Button size="small" danger icon={<DeleteOutlined />} style={{ borderRadius: 8 }} />
-        </Popconfirm>
+        <Space>
+          <Button size="small" icon={<EditOutlined />} onClick={() => handleEditPlan(record)} style={{ borderRadius: 8 }}>
+            Sửa
+          </Button>
+          <Popconfirm title="Xóa gói này?" onConfirm={() => deletePlan.mutate(record.id)}>
+            <Button size="small" danger icon={<DeleteOutlined />} style={{ borderRadius: 8 }} />
+          </Popconfirm>
+        </Space>
       ),
     },
   ];
 
   return (
-    <Table
-      columns={planColumns}
-      dataSource={plans}
-      rowKey="id"
-      loading={isLoading}
-      pagination={false}
-      size="small"
-    />
+    <>
+      <Table
+        columns={planColumns}
+        dataSource={plans}
+        rowKey="id"
+        loading={isLoading}
+        pagination={false}
+        size="small"
+      />
+      <Modal
+        title={<Text strong style={{ fontSize: 16 }}>Chỉnh sửa gói License</Text>}
+        open={editModalOpen}
+        onCancel={() => { setEditModalOpen(false); setEditingPlan(null); }}
+        onOk={() => editPlanForm.submit()}
+        confirmLoading={updatePlan.isPending}
+      >
+        <Form
+          form={editPlanForm}
+          layout="vertical"
+          onFinish={(values) => updatePlan.mutate({ id: editingPlan!.id, ...values })}
+        >
+          <Form.Item name="name" label="Tên gói" rules={[{ required: true }]}>
+            <Input style={{ borderRadius: 10 }} />
+          </Form.Item>
+          <Form.Item name="durationDays" label="Thời hạn (ngày, 0 = vĩnh viễn)" rules={[{ required: true }]}>
+            <InputNumber min={0} style={{ width: "100%", borderRadius: 10 }} />
+          </Form.Item>
+          <Form.Item name="maxActivations" label="Số thiết bị tối đa" rules={[{ required: true }]}>
+            <InputNumber min={1} style={{ width: "100%", borderRadius: 10 }} />
+          </Form.Item>
+          <Form.Item name="price" label="Giá (VND)" rules={[{ required: true }]}>
+            <InputNumber min={0} style={{ width: "100%", borderRadius: 10 }} formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")} />
+          </Form.Item>
+          <Form.Item name="features" label='Tính năng (JSON array)' rules={[{ required: true }]}>
+            <TextArea rows={2} placeholder='["feature1","feature2"]' style={{ borderRadius: 10 }} />
+          </Form.Item>
+          <Form.Item name="isActive" label="Đang bán" valuePropName="checked">
+            <Switch />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
   );
 }

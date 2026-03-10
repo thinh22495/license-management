@@ -30,7 +30,7 @@ import { licensesApi } from "@/lib/api/licenses.api";
 import { productsApi } from "@/lib/api/products.api";
 import { notificationsApi } from "@/lib/api/notifications.api";
 import type { License, Product } from "@/types";
-import { message } from "antd";
+import { App } from "antd";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -42,6 +42,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function DashboardPage() {
+  const { message } = App.useApp();
   const router = useRouter();
   const { user } = useAuthStore();
 
@@ -222,7 +223,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <Space direction="vertical" size={6} style={{ width: "100%" }}>
+                  <Space orientation="vertical" size={6} style={{ width: "100%" }}>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <Text type="secondary" style={{ fontSize: 13 }}>Kích hoạt:</Text>
                       <Text strong style={{ fontSize: 13 }}>{license.currentActivations}/{license.maxActivations}</Text>
